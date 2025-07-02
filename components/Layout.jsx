@@ -8,7 +8,7 @@ export default function Layout({ children }) {
   return (
     <>
       {/* Navigation */}
-      <header className="fixed top-0 inset-x-0 z-40 bg-black/70 dark:bg-black/70 backdrop-blur-md border-b border-white/10 dark:border-white/10">
+      <header className="fixed top-0 inset-x-0 z-40 bg-white/70 dark:bg-black/70 backdrop-blur-md border-b border-black/10 dark:border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
