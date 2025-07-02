@@ -3,6 +3,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, RefreshCcw, DollarSign } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import KPICard from '../components/KPICard.jsx';
+import { SkeletonCard, SkeletonChart, SkeletonTable } from '../components/SkeletonLoader.jsx';
 
 export default function Usage() {
   const [usageData, setUsageData] = useState(null);
@@ -84,124 +86,100 @@ export default function Usage() {
         <meta name="description" content="View detailed usage analytics and performance metrics for DreamForge VLM platform" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
-                  <ArrowLeft className="w-5 h-5" />
-                  <span>Back to Home</span>
-                </Link>
-                <div className="w-px h-6 bg-gray-300"></div>
-                <h1 className="text-xl font-semibold text-white">Usage Analytics</h1>
-              </div>
+      <div className="min-h-screen bg-black text-gray-200">
+        {/* Page Controls Bar */}
+        <div className="bg-black/50 backdrop-blur-md border-b border-white/10 sticky top-16 z-30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+            <h1 className="text-lg font-semibold text-gray-100">Usage Analytics</h1>
+            <div className="flex items-center space-x-4">
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(parseInt(e.target.value))}
+                className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-sm text-gray-200 hover:bg-white/10 transition-colors"
+              >
+                <option value={1}>Last 24 hours</option>
+                <option value={7}>Last 7 days</option>
+                <option value={30}>Last 30 days</option>
+                <option value={90}>Last 90 days</option>
+              </select>
               
-              <div className="flex items-center space-x-4">
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(parseInt(e.target.value))}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-moondream-blue focus:border-transparent"
-                >
-                  <option value={1}>Last 24 hours</option>
-                  <option value={7}>Last 7 days</option>
-                  <option value={30}>Last 30 days</option>
-                  <option value={90}>Last 90 days</option>
-                </select>
-                
-                <button
-                  onClick={() => setShowDetailed(!showDetailed)}
-                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                    showDetailed 
-                      ? 'bg-moondream-blue text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Detailed View
-                </button>
-                
-                <button
-                  onClick={fetchUsageData}
-                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-                  title="Refresh data"
-                >
-                  <RefreshCcw className="w-5 h-5" />
-                </button>
-              </div>
+              <button
+                onClick={() => setShowDetailed(!showDetailed)}
+                className={`px-3 py-1.5 rounded-md text-sm border border-white/10 transition-colors ${
+                  showDetailed ? 'bg-gradient-to-r from-gradient-start to-gradient-end text-white' : 'text-gray-200 hover:bg-white/10'
+                }`}
+              >
+                Detailed View
+              </button>
+              
+              <button
+                onClick={fetchUsageData}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+                title="Refresh data"
+              >
+                <RefreshCcw className="w-5 h-5" />
+              </button>
             </div>
           </div>
-        </header>
+        </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Calls</p>
-                  <p className="text-2xl font-bold text-white">{summary.totalCalls}</p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-blue-500" />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Last {timeRange} days</p>
-            </div>
-
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Success Rate</p>
-                  <p className="text-2xl font-bold text-green-600">{summary.successRate.toFixed(1)}%</p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-500" />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">{summary.successfulCalls}/{summary.totalCalls} successful</p>
-            </div>
-
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Avg Response Time</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {Object.values(summary.skillBreakdown).length > 0 
-                      ? Math.round(Object.values(summary.skillBreakdown).reduce((sum, skill) => sum + skill.avgResponseTime, 0) / Object.values(summary.skillBreakdown).length)
-                      : 0}ms
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-purple-500" />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Across all skills</p>
-            </div>
-
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Top Skill</p>
-                  <p className="text-2xl font-bold text-orange-600 capitalize">
-                    {Object.entries(summary.skillBreakdown).length > 0
-                      ? Object.entries(summary.skillBreakdown).reduce((a, b) => summary.skillBreakdown[a[0]].count > summary.skillBreakdown[b[0]].count ? a : b)[0]
-                      : 'N/A'
-                    }
-                  </p>
-                </div>
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <span className="text-orange-500 font-bold">🏆</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Most used skill</p>
-            </div>
-
-            {/* Cost Card */}
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Estimated Cost</p>
-                  <p className="text-2xl font-bold text-emerald-600">{`$${summary.costUSD.toFixed(3)}`}</p>
-                </div>
-                <DollarSign className="w-8 h-8 text-emerald-500" />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">$0.002 per call</p>
-            </div>
+          {/* KPI Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))
+            ) : (
+              <>
+                <KPICard
+                  title="Total Calls"
+                  value={summary.totalCalls.toLocaleString()}
+                  subtitle={`Last ${timeRange} days`}
+                  icon={TrendingUp}
+                  color="blue"
+                  trend={detailed?.dailyTrends?.slice(-7).map(d => ({ value: d.totalCalls })) || []}
+                />
+                
+                <KPICard
+                  title="Success Rate"
+                  value={`${summary.successRate.toFixed(1)}%`}
+                  subtitle={`${summary.successfulCalls}/${summary.totalCalls} successful`}
+                  icon={CheckCircle}
+                  color="green"
+                  trend={detailed?.dailyTrends?.slice(-7).map(d => ({ value: d.successRate })) || []}
+                />
+                
+                <KPICard
+                  title="Avg Response Time"
+                  value={`${Object.values(summary.skillBreakdown).length > 0 
+                    ? Math.round(Object.values(summary.skillBreakdown).reduce((sum, skill) => sum + skill.avgResponseTime, 0) / Object.values(summary.skillBreakdown).length)
+                    : 0}ms`}
+                  subtitle="Across all skills"
+                  icon={Clock}
+                  color="purple"
+                  trend={detailed?.dailyTrends?.slice(-7).map(d => ({ value: d.avgResponseTime })) || []}
+                />
+                
+                <KPICard
+                  title="Top Skill"
+                  value={Object.entries(summary.skillBreakdown).length > 0
+                    ? Object.entries(summary.skillBreakdown).reduce((a, b) => summary.skillBreakdown[a[0]].count > summary.skillBreakdown[b[0]].count ? a : b)[0]
+                    : 'N/A'}
+                  subtitle="Most used skill"
+                  icon={() => <span className="text-orange-500 font-bold text-lg">🏆</span>}
+                  color="orange"
+                />
+                
+                <KPICard
+                  title="Estimated Cost"
+                  value={`$${summary.costUSD.toFixed(3)}`}
+                  subtitle="$0.002 per call"
+                  icon={DollarSign}
+                  color="green"
+                />
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -209,7 +187,9 @@ export default function Usage() {
             <div className="glass-card p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Skill Usage Breakdown</h3>
               
-              {Object.keys(summary.skillBreakdown).length > 0 ? (
+              {loading ? (
+                <SkeletonChart />
+              ) : Object.keys(summary.skillBreakdown).length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -242,7 +222,9 @@ export default function Usage() {
             <div className="glass-card p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Performance by Skill</h3>
               
-              {Object.keys(summary.skillBreakdown).length > 0 ? (
+              {loading ? (
+                <SkeletonChart />
+              ) : Object.keys(summary.skillBreakdown).length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={Object.entries(summary.skillBreakdown).map(([skill, stats]) => ({
                     skill: skill,
@@ -274,28 +256,32 @@ export default function Usage() {
             <div className="glass-card p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Daily Usage Trends</h3>
               
-              <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={detailed.dailyTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="totalCalls" 
-                    stroke="#3B82F6" 
-                    strokeWidth={2}
-                    name="Total Calls"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="successfulCalls" 
-                    stroke="#10B981" 
-                    strokeWidth={2}
-                    name="Successful Calls"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {loading ? (
+                <SkeletonChart className="h-96" />
+              ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={detailed.dailyTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="totalCalls" 
+                      stroke="#3B82F6" 
+                      strokeWidth={2}
+                      name="Total Calls"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="successfulCalls" 
+                      stroke="#10B981" 
+                      strokeWidth={2}
+                      name="Successful Calls"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           )}
 

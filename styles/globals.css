@@ -8,25 +8,25 @@
   }
   
   body {
-    @apply bg-[#000] text-gray-200 font-sans;
+    @apply bg-[#000] dark:bg-[#000] text-gray-200 dark:text-gray-200 font-sans;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-gradient-start to-gradient-end text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200;
+    @apply bg-gradient-to-r from-gradient-start to-gradient-end text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-200;
   }
   
   .btn-secondary {
-    @apply bg-white text-gray-700 border border-gray-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors;
+    @apply bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 px-6 py-3 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105 transition-all duration-200;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-moondream-blue focus:border-transparent transition-all;
+    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-moondream-blue focus:border-transparent transition-all;
   }
   
   .skill-badge {
@@ -35,6 +35,22 @@
   
   .gradient-text {
     @apply bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent;
+  }
+  
+  /* Enhanced glassmorphism card with dark mode */
+  .glass-card {
+    @apply bg-white/5 dark:bg-white/5 backdrop-blur-lg border border-white/10 dark:border-white/10 rounded-xl;
+  }
+  
+  /* Button hover glow effect */
+  .btn-glow {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-glow:hover::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-gradient-start/20 to-gradient-end/20 rounded-xl;
+    animation: glow 0.3s ease-in-out;
   }
 }
 
@@ -91,6 +107,11 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes glow {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* Custom scrollbar styles */
@@ -189,9 +210,4 @@
 
 header a {
   @apply text-gray-300 hover:text-white;
-}
-
-/* Glassmorphism card */
-.glass-card {
-  @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl;
 } 

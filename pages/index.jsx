@@ -78,45 +78,6 @@ export default function Home() {
       </Head>
 
       <div className="min-h-screen bg-black text-gray-200">
-        {/* Header */}
-        <header className="border-b border-white/10 bg-black/60 backdrop-blur-sm sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-gradient-start to-gradient-end rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">DF</span>
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">DreamForge</h1>
-                  <p className="text-xs text-gray-500">Powered by Moondream & Anthropic</p>
-                </div>
-              </div>
-              
-              <nav className="hidden md:flex items-center space-x-6">
-                <a 
-                  href="/usage" 
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  Analytics
-                </a>
-                <a 
-                  href="https://moondream.ai" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  About Moondream
-                </a>
-                <div className="w-px h-4 bg-gray-300"></div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-gray-500">Live</span>
-                </div>
-              </nav>
-            </div>
-          </div>
-        </header>
-
         {/* Hero Section */}
         <HeroSection />
 
