@@ -2,9 +2,26 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
+import { 
+  Brain, 
+  Zap, 
+  BarChart3, 
+  Target, 
+  Shield, 
+  Download,
+  ArrowRight,
+  Sparkles,
+  Code,
+  Globe
+} from 'lucide-react';
+
+import Layout from '../components/Layout';
 import PromptForm from '../components/PromptForm';
 import ResultOverlay from '../components/ResultOverlay';
 import HeroSection from '../components/HeroSection.jsx';
+import FeatureCard from '../components/FeatureCard';
+import StatsSection from '../components/StatsSection';
+import TestimonialSection from '../components/TestimonialSection';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -68,6 +85,81 @@ export default function Home() {
     setCurrentImage(null);
   };
 
+  const features = [
+    {
+      icon: Brain,
+      title: 'Smart AI Planning',
+      description: 'Anthropic AI automatically selects the optimal analysis method for your specific prompt, ensuring the most accurate and relevant results every time.',
+      gradientFrom: 'from-purple-500',
+      gradientTo: 'to-pink-500',
+      features: [
+        'Intelligent skill routing',
+        'Context-aware processing',
+        'Automatic optimization'
+      ]
+    },
+    {
+      icon: Zap,
+      title: 'Lightning Fast',
+      description: 'Powered by optimized Moondream Cloud API with enterprise-grade infrastructure delivering sub-second response times for real-time applications.',
+      gradientFrom: 'from-yellow-500',
+      gradientTo: 'to-orange-500',
+      features: [
+        'Sub-second processing',
+        'Global CDN distribution',
+        'Auto-scaling infrastructure'
+      ]
+    },
+    {
+      icon: BarChart3,
+      title: 'Advanced Analytics',
+      description: 'Comprehensive tracking and monitoring with real-time dashboards, usage insights, and performance metrics to optimize your vision AI workflow.',
+      gradientFrom: 'from-blue-500',
+      gradientTo: 'to-cyan-500',
+      features: [
+        'Real-time dashboards',
+        'Usage optimization',
+        'Performance insights'
+      ]
+    },
+    {
+      icon: Target,
+      title: 'Visual Precision',
+      description: 'Interactive bounding boxes, point annotations, and visual overlays provide pixel-perfect accuracy for object detection and localization tasks.',
+      gradientFrom: 'from-green-500',
+      gradientTo: 'to-emerald-500',
+      features: [
+        'Pixel-perfect accuracy',
+        'Interactive overlays',
+        'Multi-object tracking'
+      ]
+    },
+    {
+      icon: Shield,
+      title: 'Enterprise Ready',
+      description: 'Production-grade reliability with fallback systems, error handling, and 99.9% uptime SLA. Built for mission-critical applications.',
+      gradientFrom: 'from-red-500',
+      gradientTo: 'to-pink-500',
+      features: [
+        '99.9% uptime SLA',
+        'Automated fallbacks',
+        'Enterprise security'
+      ]
+    },
+    {
+      icon: Download,
+      title: 'Seamless Integration',
+      description: 'Export results in multiple formats, comprehensive API documentation, and SDK support for rapid integration into existing workflows.',
+      gradientFrom: 'from-indigo-500',
+      gradientTo: 'to-purple-500',
+      features: [
+        'Multiple export formats',
+        'Comprehensive APIs',
+        'SDK libraries'
+      ]
+    }
+  ];
+
   return (
     <>
       <Head>
@@ -77,194 +169,206 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-black text-gray-200">
-        {/* Hero Section */}
-        <HeroSection />
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
+          {/* Hero Section */}
+          <HeroSection />
 
-        {/* Progress Overlay */}
-        {loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
-            <div className="relative w-72 h-72 md:w-96 md:h-96">
-              {/* Nebula swirl GIF background */}
-              <img src="/nebula.gif" alt="loading" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-80 animate-spin-slow" />
-              {/* Circular progress */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" stroke="#4f46e5" strokeWidth="10" fill="none" opacity="0.2" />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  stroke="#6366f1"
-                  strokeWidth="10"
-                  fill="none"
-                  strokeDasharray={Math.PI * 2 * 45}
-                  strokeDashoffset={Math.PI * 2 * 45 * (1 - progress / 100)}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 0.3s ease' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white font-semibold text-xl">{Math.round(progress)}%</span>
+          {/* Progress Overlay */}
+          {loading && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60">
+              <div className="relative w-72 h-72 md:w-96 md:h-96">
+                {/* Nebula swirl GIF background */}
+                <img src="/nebula.gif" alt="loading" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-80 animate-spin-slow" />
+                {/* Circular progress */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" stroke="#4f46e5" strokeWidth="10" fill="none" opacity="0.2" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    stroke="#6366f1"
+                    strokeWidth="10"
+                    fill="none"
+                    strokeDasharray={Math.PI * 2 * 45}
+                    strokeDashoffset={Math.PI * 2 * 45 * (1 - progress / 100)}
+                    strokeLinecap="round"
+                    style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-semibold text-xl">{Math.round(progress)}%</span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Main Form */}
-        <section id="full-playground" className="px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-100 mb-4">
-              Full Analysis Playground
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Upload any image and use advanced prompts for detailed analysis with object detection, 
-              point localization, visual Q&A, and smart captioning.
-            </p>
-          </div>
-          <PromptForm onSubmit={handleSubmit} loading={loading} />
-        </section>
-
-        {/* Features Grid */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a]">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Production-Ready Vision AI
-              </h3>
-              <p className="text-gray-600">
-                Built with enterprise-grade architecture and best practices
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                {
-                  title: 'Smart Planning',
-                  description: 'Anthropic AI automatically selects the best analysis method for your prompt',
-                  icon: '🧠',
-                  color: 'border-purple-200'
-                },
-                {
-                  title: 'Real-time Analysis',
-                  description: 'Fast inference with Moondream cloud API and optimized processing',
-                  icon: '⚡',
-                  color: 'border-yellow-200'
-                },
-                {
-                  title: 'Usage Analytics',
-                  description: 'Comprehensive tracking, monitoring, and performance metrics',
-                  icon: '📊',
-                  color: 'border-blue-200'
-                },
-                {
-                  title: 'Visual Overlays',
-                  description: 'Interactive bounding boxes and point annotations on images',
-                  icon: '🎯',
-                  color: 'border-green-200'
-                },
-                {
-                  title: 'Fallback System',
-                  description: 'Rule-based backup when AI planning is unavailable',
-                  icon: '🛡️',
-                  color: 'border-red-200'
-                },
-                {
-                  title: 'Export Results',
-                  description: 'Download analysis results in JSON format for integration',
-                  icon: '💾',
-                  color: 'border-indigo-200'
-                }
-              ].map((feature, index) => (
-                <div key={index} className={`p-6 bg-[#111827]/70 rounded-xl border border-white/10 hover:shadow-lg transition-shadow`}>
-                  <div className="text-2xl mb-3">{feature.icon}</div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h4>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+          {/* Main Playground Section */}
+          <section id="full-playground" className="px-4 sm:px-6 lg:px-8 py-20 relative">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 mb-6">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-purple-300">AI-Powered Analysis</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-[#0d0d1a] text-gray-400">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div>
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-gradient-start to-gradient-end rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">DF</span>
-                  </div>
-                  <span className="text-xl font-bold">DreamForge</span>
-                </div>
-                <p className="text-gray-400 text-sm">
-                  Production-grade VLM platform combining the power of Moondream and Anthropic AI 
-                  for comprehensive visual intelligence.
+                
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  Full Analysis{' '}
+                  <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                    Playground
+                  </span>
+                </h2>
+                
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+                  Upload any image and harness advanced AI prompts for comprehensive analysis including 
+                  object detection, point localization, visual Q&A, and intelligent captioning.
                 </p>
               </div>
               
-              <div>
-                <h5 className="font-semibold mb-3">Technology</h5>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>Moondream Vision API</li>
-                  <li>Anthropic Claude</li>
-                  <li>Next.js & React</li>
-                  <li>MongoDB Atlas</li>
-                </ul>
+              <PromptForm onSubmit={handleSubmit} loading={loading} />
+            </div>
+          </section>
+
+          {/* Features Section */}
+          <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/50 to-transparent" />
+            
+            <div className="max-w-6xl mx-auto relative">
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 mb-6">
+                  <Code className="w-4 h-4 text-green-400" />
+                  <span className="text-sm font-medium text-green-300">Enterprise Features</span>
+                </div>
+                
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  Production-Ready{' '}
+                  <span className="bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    Vision AI
+                  </span>
+                </h2>
+                
+                <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+                  Built with enterprise-grade architecture, advanced AI orchestration, and 
+                  best-in-class developer experience for mission-critical applications.
+                </p>
               </div>
               
-              <div>
-                <h5 className="font-semibold mb-3">Features</h5>
-                <ul className="space-y-2 text-sm text-gray-400">
-                  <li>Object Detection</li>
-                  <li>Point Localization</li>
-                  <li>Visual Q&A</li>
-                  <li>Smart Captioning</li>
-                </ul>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {features.map((feature, index) => (
+                  <FeatureCard
+                    key={index}
+                    {...feature}
+                    onClick={() => {
+                      // Could navigate to specific feature pages
+                      console.log(`Navigate to ${feature.title} details`);
+                    }}
+                  />
+                ))}
               </div>
             </div>
+          </section>
+
+          {/* Stats Section */}
+          <StatsSection />
+
+          {/* Testimonials Section */}
+          <TestimonialSection />
+
+          {/* CTA Section */}
+          <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20" />
             
-            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-              <p>© 2024 DreamForge. Built with Next.js, Tailwind CSS, and modern AI.</p>
+            <div className="max-w-4xl mx-auto text-center relative">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 mb-6">
+                <Globe className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium text-purple-300">Get Started Today</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                Ready to Transform{' '}
+                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                  Your Vision?
+                </span>
+              </h2>
+              
+              <p className="text-xl text-gray-300 mb-10 leading-relaxed">
+                Join thousands of developers and enterprises building the future with DreamForge's 
+                advanced vision AI platform. Start analyzing images in seconds.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <a 
+                  href="#full-playground"
+                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-cyan-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
+                >
+                  <span>Try Free Demo</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
+                
+                <a 
+                  href="/usage"
+                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-white/[0.2] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                >
+                  <BarChart3 className="w-5 h-5" />
+                  <span>View Analytics</span>
+                </a>
+              </div>
+              
+              <div className="mt-12 flex items-center justify-center space-x-8 text-sm text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                  <span>Free to start</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                  <span>Production ready</span>
+                </div>
+              </div>
             </div>
-          </div>
-        </footer>
+          </section>
 
-        {/* Result Overlay */}
-        {result && (
-          <ResultOverlay 
-            result={result} 
-            image={currentImage}
-            onClose={closeResult}
+          {/* Result Overlay */}
+          {result && (
+            <ResultOverlay 
+              result={result} 
+              image={currentImage}
+              onClose={closeResult}
+            />
+          )}
+
+          {/* Toast Notifications */}
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'rgba(17, 24, 39, 0.95)',
+                color: '#f3f4f6',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '0.75rem',
+                backdropFilter: 'blur(16px)',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#10b981',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
           />
-        )}
-
-        {/* Toast Notifications */}
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#fff',
-              color: '#374151',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.75rem',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
-      </div>
+        </div>
+      </Layout>
     </>
   );
 } 
