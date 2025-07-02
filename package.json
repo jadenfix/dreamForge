@@ -15,7 +15,8 @@
     "clean": "rm -rf .next out dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.10.0",
+    "@anthropic-ai/sdk": "^0.55.1",
+    "dotenv": "^17.0.1",
     "lucide-react": "^0.292.0",
     "mongoose": "^8.0.0",
     "next": "^14.0.0",
