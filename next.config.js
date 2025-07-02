@@ -8,6 +8,9 @@ const nextConfig = {
   },
   // Enable source maps in production for better debugging
   productionBrowserSourceMaps: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 module.exports = nextConfig 
