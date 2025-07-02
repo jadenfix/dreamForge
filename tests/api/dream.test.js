@@ -1,9 +1,14 @@
+import '@anthropic-ai/sdk/shims/node';
 import { createMocks } from 'node-mocks-http';
 import handler from '../../pages/api/dream';
 
 // Mock external dependencies
 jest.mock('@anthropic-ai/sdk');
-jest.mock('../../lib/mongodb.js');
+jest.mock('../../lib/mongodb.js', () => ({
+  default: jest.fn().mockResolvedValue({
+    connection: { readyState: 1 }
+  })
+}));
 jest.mock('../../lib/moondreamClient.js');
 jest.mock('../../models/Usage.js');
 
@@ -51,8 +56,13 @@ describe('/api/dream', () => {
       save: jest.fn().mockResolvedValue({}),
       markError: jest.fn().mockResolvedValue({})
     };
+    
+    // Mock the Usage constructor and static method
+    jest.doMock('../../models/Usage.js', () => ({
+      default: jest.fn().mockImplementation(() => mockUsage)
+    }));
+    
     const Usage = require('../../models/Usage.js').default;
-    Usage.mockImplementation(() => mockUsage);
     Usage.getUsageSummary = jest.fn().mockResolvedValue({
       totalCalls: 1,
       successRate: 100,
@@ -79,7 +89,6 @@ describe('/api/dream', () => {
 
     expect(res._getStatusCode()).toBe(200);
     const responseData = JSON.parse(res._getData());
-    
     expect(responseData.success).toBe(true);
     expect(responseData.skill).toBe('caption');
     expect(responseData.result.caption).toBe('A test image caption');
@@ -106,8 +115,13 @@ describe('/api/dream', () => {
       save: jest.fn().mockResolvedValue({}),
       markError: jest.fn().mockResolvedValue({})
     };
+    
+    // Mock the Usage constructor and static method
+    jest.doMock('../../models/Usage.js', () => ({
+      default: jest.fn().mockImplementation(() => mockUsage)
+    }));
+    
     const Usage = require('../../models/Usage.js').default;
-    Usage.mockImplementation(() => mockUsage);
     Usage.getUsageSummary = jest.fn().mockResolvedValue({
       totalCalls: 1,
       successRate: 100,
@@ -149,8 +163,13 @@ describe('/api/dream', () => {
       save: jest.fn().mockResolvedValue({}),
       markError: jest.fn().mockResolvedValue({})
     };
+    
+    // Mock the Usage constructor
+    jest.doMock('../../models/Usage.js', () => ({
+      default: jest.fn().mockImplementation(() => mockUsage)
+    }));
+    
     const Usage = require('../../models/Usage.js').default;
-    Usage.mockImplementation(() => mockUsage);
 
     // Mock moondream client to throw error
     const mockMoondreamClient = require('../../lib/moondreamClient.js').default;

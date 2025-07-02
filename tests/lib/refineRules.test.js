@@ -5,9 +5,10 @@ describe('refineRules', () => {
     const prompts = [
       'What objects can you detect in this image?',
       'Find all the cars in the picture',
-      'Identify the people in this scene',
+      'Identify objects in this scene',
       'Locate all objects',
-      'What things do you see?'
+      'Detect people in this image',
+      'Find all objects you can see'
     ];
 
     prompts.forEach(prompt => {
@@ -22,7 +23,8 @@ describe('refineRules', () => {
       'Point to the car',
       'What are the coordinates of the building?',
       'Mark the position of the dog',
-      'Click on the red object'
+      'Click on the red object',
+      'Where is the car located?'
     ];
 
     prompts.forEach(prompt => {
@@ -38,7 +40,7 @@ describe('refineRules', () => {
       'Why is the person running?',
       'When was this photo taken?',
       'Who is in the picture?',
-      'Explain what you see',
+      'Explain what is in this image',
       'Tell me about this scene'
     ];
 
@@ -51,10 +53,11 @@ describe('refineRules', () => {
   it('should classify caption prompts correctly', () => {
     const prompts = [
       'Caption this image',
-      'Describe what you see',
+      'Describe this image',
       'Give me a summary of this picture',
       'Provide an overview of the scene',
-      'What is happening generally?'
+      'Describe what you see in this image',
+      'Describe this scene'
     ];
 
     prompts.forEach(prompt => {

@@ -1,3 +1,4 @@
+import '@anthropic-ai/sdk/shims/node';
 import { Anthropic } from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import connectToDatabase from '../../lib/mongodb.js';
@@ -13,10 +14,7 @@ const DreamSchema = z.object({
   useAnthropicPlanner: z.boolean().optional().default(true)
 });
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({ 
-  apiKey: process.env.ANTHROPIC_API_KEY 
-});
+// Anthropic client will be initialized when needed
 
 export default async function handler(req, res) {
   // Only allow POST requests
@@ -45,6 +43,11 @@ export default async function handler(req, res) {
     // Step 1: LLM-driven prompt refinement (with fallback)
     if (useAnthropicPlanner && process.env.ANTHROPIC_API_KEY) {
       try {
+        // Initialize Anthropic client when needed
+        const anthropic = new Anthropic({ 
+          apiKey: process.env.ANTHROPIC_API_KEY 
+        });
+
         const planPrompt = `You are a router for a visual AI system. Given the user request:
 "${prompt}"
 
