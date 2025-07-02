@@ -120,6 +120,23 @@ jest.mock('mongoose', () => {
 
 
 
+// Mock the Usage model completely
+jest.mock('./models/Usage.js', () => {
+  const mockUsageInstance = {
+    save: jest.fn().mockResolvedValue({}),
+    markError: jest.fn().mockResolvedValue({})
+  };
+  
+  const MockUsage = jest.fn(() => mockUsageInstance);
+  MockUsage.getUsageSummary = jest.fn().mockResolvedValue({
+    totalCalls: 1,
+    successRate: 100,
+    skillBreakdown: { caption: 1 }
+  });
+  
+  return { default: MockUsage };
+});
+
 // Also mock the mongodb module directly
 jest.mock('mongodb', () => ({
   MongoClient: {
