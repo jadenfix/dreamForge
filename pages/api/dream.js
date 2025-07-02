@@ -1,22 +1,17 @@
 import { Anthropic } from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import connectToDatabase from '../../lib/mongodb.js';
 import moondreamClient from '../../lib/moondreamClient.js';
 import refineRules from '../../lib/refineRules.js';
-import Usage from '../../models/Usage.js';
 import logger from '../../lib/logger.js';
+import { addUsageRecord, getUsageCount, getSuccessfulUsageCount } from '../../lib/inMemoryStorage.js';
 
-// Input validation schema
+// Validation schema
 const DreamSchema = z.object({
   prompt: z.string().min(1).max(2000),
-  image: z.string().min(1), // Base64 encoded image
-  useAnthropicPlanner: z.boolean().optional().default(true)
+  image: z.string().min(1), // base64 encoded image
 });
 
-// Anthropic client will be initialized when needed
-
 export default async function handler(req, res) {
-  // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -25,31 +20,27 @@ export default async function handler(req, res) {
   let usageRecord = null;
 
   try {
-    // Connect to database
-    await connectToDatabase();
+    logger.info('Processing dream request');
 
-    // Validate request body
-    const { prompt, image, useAnthropicPlanner } = DreamSchema.parse(req.body);
-    
-    logger.info('Processing dream request', { 
-      promptLength: prompt.length,
-      imageSize: image.length,
-      useAnthropicPlanner 
-    });
+    // Step 1: Validate input
+    const { prompt, image } = DreamSchema.parse(req.body);
 
-    let skill, params;
+    // Step 2: First try Anthropic for intelligent routing
+    let skill = 'caption'; // default fallback
+    let params = {};
 
-    // Step 1: LLM-driven prompt refinement (with fallback)
-    if (useAnthropicPlanner && process.env.ANTHROPIC_API_KEY) {
+    if (process.env.ANTHROPIC_API_KEY) {
       try {
-        // Initialize Anthropic client when needed
-        const anthropic = new Anthropic({ 
-          apiKey: process.env.ANTHROPIC_API_KEY 
-        });
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-        const planPrompt = `You are a router for a visual AI system. Given the user request:
-"${prompt}"
-
+        const planRes = await anthropic.messages.create({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 128,
+          temperature: 0.1,
+          messages: [{
+            role: 'user',
+            content: `You are a router for a visual AI system. Given the user request: "${prompt}"
+        
 Analyze this request and return ONLY a JSON object with this exact structure:
 {
   "skill": "detect" | "point" | "query" | "caption",
@@ -58,71 +49,78 @@ Analyze this request and return ONLY a JSON object with this exact structure:
 
 Skills:
 - "detect": Find/identify objects in the image
-- "point": Locate specific coordinates/positions
+- "point": Locate specific coordinates/positions  
 - "query": Answer questions about the image
 - "caption": Generate descriptions of the image
 
-Choose the most appropriate skill and include relevant parameters.`;
-
-        const planRes = await anthropic.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 150,
-          temperature: 0.1,
-          messages: [{
-            role: 'user',
-            content: planPrompt
+Choose the most appropriate skill and include relevant parameters.`
           }]
         });
 
         const planText = planRes.content[0].text.trim();
-        const parsed = JSON.parse(planText);
-        
-        if (['detect', 'point', 'query', 'caption'].includes(parsed.skill)) {
-          skill = parsed.skill;
-          params = parsed.params || {};
+        const parsedPlan = JSON.parse(planText);
+
+        if (['detect', 'point', 'query', 'caption'].includes(parsedPlan.skill)) {
+          skill = parsedPlan.skill;
+          params = parsedPlan.params || {};
           logger.info('Anthropic planning successful', { skill, params });
-        } else {
-          throw new Error('Invalid skill from Anthropic');
         }
       } catch (anthropicError) {
         logger.warn('Anthropic planning failed, using fallback', anthropicError.message);
-        const fallback = refineRules(prompt);
-        skill = fallback.skill;
-        params = fallback.params;
       }
-    } else {
-      // Use fallback rules directly
+    }
+
+    // If Anthropic failed, use local rules
+    if (skill === 'caption' && Object.keys(params).length === 0) {
       const fallback = refineRules(prompt);
       skill = fallback.skill;
       params = fallback.params;
       logger.info('Using fallback rules', { skill, params });
     }
 
-    // Create usage record
+    // Create usage record (in memory if MongoDB fails)
     const usageData = {
       prompt,
       skill,
       parameters: params,
       userAgent: req.headers['user-agent'],
-      ipAddress: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || ''
+      ipAddress: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || '',
+      timestamp: new Date(),
+      success: true
     };
 
-    // Some test mocks may not support using "new" with Usage, so handle gracefully
+    // Try to use MongoDB first
     try {
-      if (typeof Usage === 'function') {
-        usageRecord = new Usage(usageData);
-      } else {
-        usageRecord = { ...usageData, save: async () => {}, markError: async () => {} };
-      }
-    } catch (constructErr) {
-      // Fallback stub record (primarily for test environments with mocked Usage)
-      usageRecord = { ...usageData, save: async () => {}, markError: async () => {} };
+      const connectToDatabase = (await import('../../lib/mongodb.js')).default;
+      const Usage = (await import('../../models/Usage.js')).default;
+      
+      await connectToDatabase();
+      usageRecord = new Usage(usageData);
+      logger.info('Using MongoDB for usage tracking');
+    } catch (dbError) {
+      // Fall back to in-memory storage
+      usageRecord = {
+        ...usageData,
+        save: async function() {
+          this.responseTime = this.responseTime || 0;
+          this.resultSize = this.resultSize || 0;
+          this.confidence = this.confidence || null;
+          addUsageRecord(this);
+          logger.info('Saved usage data to memory store');
+        },
+        markError: async function(errorMessage) {
+          this.success = false;
+          this.errorMessage = errorMessage;
+          await this.save();
+        }
+      };
+      logger.warn('MongoDB unavailable, using in-memory storage');
     }
 
-    // Step 2: Convert base64 to buffer for Moondream
+    // Step 3: Convert base64 to buffer for Moondream
     const imageBuffer = Buffer.from(image, 'base64');
     
-    // Step 3: Call Moondream API
+    // Step 4: Call Moondream API
     const dreamStartTime = Date.now();
     
     let moondreamResponse;
@@ -245,7 +243,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     // -----------------------------------
     const totalDuration = Date.now() - startTime;
 
-    // Step 4: Update usage record with results
+    // Step 5: Update usage record with results
     usageRecord.responseTime = totalDuration;
     usageRecord.resultSize = JSON.stringify(moondreamResponse).length;
     usageRecord.success = verified; // mark success according to verification
@@ -261,20 +259,15 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
 
     await usageRecord.save();
 
-    // Step 5: Get usage summary for response (handle mock cases)
-    let usageSummary;
-    if (typeof Usage.getUsageSummary === 'function') {
-      usageSummary = await Usage.getUsageSummary();
-    } else {
-      usageSummary = {
-        totalCalls: 1,
-        successRate: 100,
-        skillBreakdown: {},
-        timeRange: 7
-      };
-    }
+    // Step 6: Get usage summary for response
+    let usageSummary = {
+      totalCalls: getUsageCount(),
+      successRate: Math.round((getSuccessfulUsageCount() / Math.max(getUsageCount(), 1)) * 100),
+      skillBreakdown: {},
+      timeRange: 7
+    };
 
-    // Step 6: Return enriched response
+    // Step 7: Return enriched response
     const response = {
       success: true,
       skill,
@@ -285,7 +278,8 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
       metadata: {
         totalTime: totalDuration,
         dreamTime: dreamDuration,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        dataStorage: usageRecord.save.toString().includes('inMemoryUsageData') ? 'memory' : 'mongodb'
       },
       usage: usageSummary,
       analysis: analysis
@@ -294,7 +288,8 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     logger.info('Dream request completed successfully', {
       skill,
       totalTime: totalDuration,
-      dreamTime: dreamDuration
+      dreamTime: dreamDuration,
+      dataStorage: response.metadata.dataStorage
     });
 
     return res.status(200).json(response);

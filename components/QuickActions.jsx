@@ -310,7 +310,7 @@ export default function QuickActions({
           <Check className="w-4 h-4" />
           <span className="text-sm">Link copied to clipboard!</span>
         </div>
-            )}
+      )}
     </div>
   );
 } 
