@@ -21,7 +21,7 @@ const QUICK_ACTIONS = [
   {
     id: 'new-analysis',
     name: 'New Analysis',
-    description: 'Start fresh analysis',
+    description: 'Start analysis',
     icon: Camera,
     gradient: 'from-purple-500 to-pink-500',
     action: 'navigate',
@@ -30,23 +30,23 @@ const QUICK_ACTIONS = [
   {
     id: 'export-data',
     name: 'Export Data',
-    description: 'Download analytics',
+    description: 'Download JSON',
     icon: Download,
     gradient: 'from-blue-500 to-cyan-500',
     action: 'export',
   },
   {
     id: 'share-dashboard',
-    name: 'Share Dashboard',
-    description: 'Share public link',
+    name: 'Share',
+    description: 'Copy link',
     icon: Share2,
     gradient: 'from-green-500 to-emerald-500',
     action: 'share',
   },
   {
     id: 'refresh-data',
-    name: 'Refresh Data',
-    description: 'Update all metrics',
+    name: 'Refresh',
+    description: 'Update metrics',
     icon: RefreshCw,
     gradient: 'from-orange-500 to-red-500',
     action: 'refresh',
@@ -54,7 +54,7 @@ const QUICK_ACTIONS = [
   {
     id: 'api-docs',
     name: 'API Docs',
-    description: 'Integration guide',
+    description: 'Integration',
     icon: FileText,
     gradient: 'from-indigo-500 to-purple-500',
     action: 'external',
@@ -63,7 +63,7 @@ const QUICK_ACTIONS = [
   {
     id: 'settings',
     name: 'Settings',
-    description: 'Configure dashboard',
+    description: 'Configure',
     icon: Settings,
     gradient: 'from-gray-500 to-slate-500',
     action: 'modal',
@@ -85,25 +85,25 @@ function ActionCard({ action, onAction, isLoading = false }) {
     <button
       onClick={() => onAction(action)}
       disabled={isLoading}
-      className="group relative p-4 rounded-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl hover:from-white/[0.08] hover:to-white/[0.04] hover:border-white/[0.1] transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+      className="group relative p-3 rounded-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl hover:from-white/[0.08] hover:to-white/[0.04] hover:border-white/[0.1] transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-left w-full"
     >
       {/* Background Gradient */}
       <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity rounded-xl`} />
       
       <div className="relative">
-        <div className="flex items-start justify-between mb-3">
-          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+        <div className="flex items-center justify-between mb-2">
+          <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0`}>
             {isLoading ? (
-              <RefreshCw className="w-5 h-5 text-white animate-spin" />
+              <RefreshCw className="w-4 h-4 text-white animate-spin" />
             ) : (
-              <Icon className="w-5 h-5 text-white" />
+              <Icon className="w-4 h-4 text-white" />
             )}
           </div>
-          <ExternalLink className="w-4 h-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         
-        <h4 className="font-medium text-white mb-1">{action.name}</h4>
-        <p className="text-sm text-gray-400">{action.description}</p>
+        <h4 className="font-medium text-white text-sm mb-1 leading-tight">{action.name}</h4>
+        <p className="text-xs text-gray-400 leading-tight">{action.description}</p>
       </div>
     </button>
   );
@@ -115,12 +115,12 @@ function ShortcutItem({ shortcut, onAction }) {
   return (
     <button
       onClick={() => onAction(shortcut)}
-      className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-white/[0.05] transition-colors text-left group"
+      className="flex items-center space-x-3 w-full p-2.5 rounded-lg hover:bg-white/[0.05] transition-colors text-left group"
     >
-      <div className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors">
-        <Icon className="w-4 h-4 text-gray-400 group-hover:text-white" />
+      <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors shrink-0">
+        <Icon className="w-3.5 h-3.5 text-gray-400 group-hover:text-white" />
       </div>
-      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">
+      <span className="text-xs text-gray-300 group-hover:text-white transition-colors leading-tight">
         {shortcut.name}
       </span>
     </button>
@@ -208,17 +208,15 @@ export default function QuickActions({
   };
 
   const handleShare = async () => {
-    const shareUrl = window.location.href;
-    
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch (error) {
+      console.error('Failed to copy link:', error);
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
-      textArea.value = shareUrl;
+      textArea.value = window.location.href;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
@@ -229,54 +227,44 @@ export default function QuickActions({
   };
 
   const handleShortcutAction = (shortcut) => {
-    onAction?.({ type: 'shortcut', shortcut });
+    console.log('Shortcut action:', shortcut.id);
+    onAction?.(shortcut);
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Quick Actions Grid */}
-      <div className="bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-white">Quick Actions</h3>
-          <div className="flex items-center space-x-2">
-            {copied && (
-              <div className="flex items-center space-x-1 text-green-400 text-sm">
-                <Check className="w-4 h-4" />
-                <span>Copied!</span>
-              </div>
-            )}
-            <button
-              onClick={() => onRefresh?.()}
-              className="p-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors"
-            >
-              <RefreshCw className="w-4 h-4 text-gray-400" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {QUICK_ACTIONS.map((action) => (
-            <ActionCard
-              key={action.id}
-              action={action}
-              onAction={handleAction}
-              isLoading={loadingActions.has(action.id)}
-            />
-          ))}
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
+        <RefreshCw 
+          className="w-4 h-4 text-gray-400 hover:text-white cursor-pointer transition-colors" 
+          onClick={() => window.location.reload()}
+        />
+      </div>
+
+      {/* Main Actions Grid - More compact 2x3 grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {QUICK_ACTIONS.map((action) => (
+          <ActionCard
+            key={action.id}
+            action={action}
+            onAction={handleAction}
+            isLoading={loadingActions.has(action.id)}
+          />
+        ))}
       </div>
 
       {/* Recent Shortcuts */}
-      <div className="bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl rounded-2xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Recent Shortcuts</h3>
-          <button className="text-sm text-gray-400 hover:text-white transition-colors">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-gray-300">Recent Shortcuts</h4>
+          <button className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
             View all
           </button>
         </div>
         
         <div className="space-y-1">
-          {recentShortcuts.map((shortcut) => (
+          {recentShortcuts.slice(0, 4).map((shortcut) => (
             <ShortcutItem
               key={shortcut.id}
               shortcut={shortcut}
@@ -286,33 +274,43 @@ export default function QuickActions({
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl rounded-2xl p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">At a Glance</h3>
+      {/* Status Section */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-gray-300">At a Glance</h4>
         
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">System Status</span>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">System Status</span>
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-green-400">Operational</span>
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-green-400">Operational</span>
             </div>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Last Update</span>
-            <span className="text-sm text-white flex items-center">
-              <Clock className="w-3 h-3 mr-1" />
-              2 minutes ago
-            </span>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">Last Update</span>
+            <span className="text-gray-300">{new Date().toLocaleTimeString().slice(0, 5)}</span>
           </div>
           
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">API Health</span>
-            <span className="text-sm text-green-400">99.9% uptime</span>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">API Health</span>
+            <span className="text-green-400">99.9% uptime</span>
+          </div>
+          
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">Response Time</span>
+            <span className="text-blue-400">~2.4s avg</span>
           </div>
         </div>
       </div>
+
+      {/* Copy Success Feedback */}
+      {copied && (
+        <div className="fixed bottom-4 right-4 bg-green-500/20 border border-green-500/30 text-green-300 px-4 py-2 rounded-lg flex items-center space-x-2 backdrop-blur-xl">
+          <Check className="w-4 h-4" />
+          <span className="text-sm">Link copied to clipboard!</span>
+        </div>
+            )}
     </div>
   );
 } 
