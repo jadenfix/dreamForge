@@ -1,0 +1,52 @@
+{
+  "name": "dreamforge",
+  "version": "1.0.0",
+  "description": "Production-grade VLM platform - From Prompt to Vision Models",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "type-check": "echo 'Type checking would run here'",
+    "format": "prettier --write .",
+    "clean": "rm -rf .next out dist"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.10.0",
+    "lucide-react": "^0.292.0",
+    "mongoose": "^8.0.0",
+    "next": "^14.0.0",
+    "pino": "^8.16.0",
+    "pino-pretty": "^10.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-dropzone": "^14.2.0",
+    "react-hot-toast": "^2.4.0",
+    "recharts": "^2.8.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^13.4.0",
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^8.51.0",
+    "eslint-config-next": "^14.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "node-mocks-http": "^1.17.2",
+    "postcss": "^8.4.0",
+    "prettier": "^3.0.0",
+    "supertest": "^6.3.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
