@@ -180,6 +180,23 @@ describe('/api/dream', () => {
   });
 
   it('should include analysis field from Anthropic insight step', async () => {
+    // Setup fresh mocks for this test
+    const { Anthropic } = require('@anthropic-ai/sdk');
+    const mockCreate = jest.fn()
+      .mockResolvedValueOnce({ // Planning step
+        content: [{ text: '{"skill":"caption","params":{}}' }]
+      })
+      .mockResolvedValueOnce({ // Verification step
+        content: [{ text: '{"verified":true,"feedback":""}' }]
+      })
+      .mockResolvedValueOnce({ // Insight step
+        content: [{ text: '{"explanation":"Image shows a scene","insights":["Insight 1"],"followUp":[]}' }]
+      });
+
+    Anthropic.mockImplementation(() => ({
+      messages: { create: mockCreate }
+    }));
+
     const { req, res } = createMocks({
       method: 'POST',
       body: {
