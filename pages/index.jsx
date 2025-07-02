@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
 import PromptForm from '../components/PromptForm';
 import ResultOverlay from '../components/ResultOverlay';
+import HeroSection from '../components/HeroSection.jsx';
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [currentImage, setCurrentImage] = useState(null);
+
+  // Simulate progress bar during loading
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      setProgress(0);
+      timer = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 90) {
+            return prev + Math.random() * 10;
+          }
+          return prev;
+        });
+      }, 400);
+    } else {
+      setProgress(100);
+      const timeout = setTimeout(() => setProgress(0), 500);
+      return () => clearTimeout(timeout);
+    }
+    return () => clearInterval(timer);
+  }, [loading]);
 
   const handleSubmit = async (formData) => {
     setLoading(true);
@@ -54,9 +77,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <div className="min-h-screen bg-black text-gray-200">
         {/* Header */}
-        <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
+        <header className="border-b border-white/10 bg-black/60 backdrop-blur-sm sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-3">
@@ -72,7 +95,7 @@ export default function Home() {
               <nav className="hidden md:flex items-center space-x-6">
                 <a 
                   href="/usage" 
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   Analytics
                 </a>
@@ -80,7 +103,7 @@ export default function Home() {
                   href="https://moondream.ai" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
                 >
                   About Moondream
                 </a>
@@ -95,43 +118,44 @@ export default function Home() {
         </header>
 
         {/* Hero Section */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6">
-              Transform Your Vision with{' '}
-              <span className="bg-gradient-to-r from-gradient-start to-gradient-end bg-clip-text text-transparent">
-                AI Intelligence
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Upload any image and ask questions. Our AI will detect objects, locate points, 
-              answer queries, and generate captions with professional-grade accuracy.
-            </p>
-            
-            {/* Feature Pills */}
-            <div className="flex flex-wrap justify-center gap-3 mb-12">
-              {[
-                { icon: '👁️', text: 'Object Detection', color: 'bg-blue-100 text-blue-700' },
-                { icon: '📍', text: 'Point Location', color: 'bg-green-100 text-green-700' },
-                { icon: '❓', text: 'Visual Q&A', color: 'bg-purple-100 text-purple-700' },
-                { icon: '📝', text: 'Smart Captions', color: 'bg-orange-100 text-orange-700' }
-              ].map((feature, index) => (
-                <div key={index} className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full ${feature.color}`}>
-                  <span>{feature.icon}</span>
-                  <span className="text-sm font-medium">{feature.text}</span>
-                </div>
-              ))}
+        <HeroSection />
+
+        {/* Progress Overlay */}
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
+            <div className="relative w-72 h-72 md:w-96 md:h-96">
+              {/* Nebula swirl GIF background */}
+              <img src="/nebula.gif" alt="loading" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-80 animate-spin-slow" />
+              {/* Circular progress */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" stroke="#4f46e5" strokeWidth="10" fill="none" opacity="0.2" />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  stroke="#6366f1"
+                  strokeWidth="10"
+                  fill="none"
+                  strokeDasharray={Math.PI * 2 * 45}
+                  strokeDashoffset={Math.PI * 2 * 45 * (1 - progress / 100)}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white font-semibold text-xl">{Math.round(progress)}%</span>
+              </div>
             </div>
           </div>
-        </section>
+        )}
 
         {/* Main Form */}
-        <section className="pb-16 px-4 sm:px-6 lg:px-8">
+        <section className="px-4 sm:px-6 lg:px-8 -mt-24 pb-20">
           <PromptForm onSubmit={handleSubmit} loading={loading} />
         </section>
 
         {/* Features Grid */}
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a]">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
@@ -181,7 +205,7 @@ export default function Home() {
                   color: 'border-indigo-200'
                 }
               ].map((feature, index) => (
-                <div key={index} className={`p-6 bg-white rounded-xl border-2 ${feature.color} hover:shadow-lg transition-shadow`}>
+                <div key={index} className={`p-6 bg-[#111827]/70 rounded-xl border border-white/10 hover:shadow-lg transition-shadow`}>
                   <div className="text-2xl mb-3">{feature.icon}</div>
                   <h4 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h4>
                   <p className="text-gray-600 text-sm">{feature.description}</p>
@@ -192,7 +216,7 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-gray-900 text-white">
+        <footer className="py-12 px-4 sm:px-6 lg:px-8 bg-[#0d0d1a] text-gray-400">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>

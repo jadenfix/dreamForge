@@ -31,6 +31,10 @@ export default async function handler(req, res) {
 
     // Get usage summary
     const summary = await Usage.getUsageSummary(timeRangeDays);
+
+    // Add mock cost calculation (e.g., $0.002 per call)
+    const COST_PER_CALL = 0.002;
+    summary.costUSD = parseFloat((summary.totalCalls * COST_PER_CALL).toFixed(3));
     
     // Get recent history
     const recentHistory = await Usage.getRecentHistory(historyLimit);

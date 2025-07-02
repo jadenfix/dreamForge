@@ -119,7 +119,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
 
   if (!result) return null;
 
-  const { skill, result: data, metadata, usage } = result;
+  const { skill, result: data, metadata, usage, verified, feedback } = result;
 
   const getSkillIcon = (skill) => {
     switch (skill) {
@@ -143,7 +143,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className={`bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl ring-4 ${typeof verified === 'boolean' ? (verified ? 'ring-green-400' : 'ring-red-400') : 'ring-transparent'}`}>
         {/* Header */}
         <div className="bg-gradient-to-r from-gradient-start to-gradient-end p-6">
           <div className="flex items-center justify-between">
@@ -158,6 +158,11 @@ const ResultOverlay = ({ result, image, onClose }) => {
                 <p className="text-white/80 text-sm">
                   Analysis completed in {metadata.totalTime}ms
                 </p>
+                {typeof verified === 'boolean' && (
+                  <span className={`inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full ${verified ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+                    {verified ? 'Verified' : 'Unverified'}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -393,6 +398,22 @@ const ResultOverlay = ({ result, image, onClose }) => {
                   )}
                 </div>
               </div>
+
+              {typeof verified === 'boolean' && (
+                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">Verification</span>
+                  <span className={`text-sm font-semibold ${verified ? 'text-green-600' : 'text-red-600'}`}>
+                    {verified ? 'Passed' : 'Failed'}
+                  </span>
+                </div>
+              )}
+
+              {feedback && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium block mb-2">Verifier Feedback</span>
+                  <p className="text-xs text-gray-600 whitespace-pre-wrap">{feedback}</p>
+                </div>
+              )}
             </div>
           )}
         </div>

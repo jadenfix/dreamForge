@@ -102,6 +102,7 @@ jest.mock('mongoose', () => {
       create: jest.fn(),
       save: jest.fn(),
       aggregate: jest.fn(),
+      countDocuments: jest.fn(),
     })),
     models: {},
     Types: {
@@ -118,26 +119,7 @@ jest.mock('mongoose', () => {
   };
 });
 
-
-
-// Mock the Usage model completely
-jest.mock('./models/Usage.js', () => {
-  const mockUsageInstance = {
-    save: jest.fn().mockResolvedValue({}),
-    markError: jest.fn().mockResolvedValue({})
-  };
-  
-  const MockUsage = jest.fn(() => mockUsageInstance);
-  MockUsage.getUsageSummary = jest.fn().mockResolvedValue({
-    totalCalls: 1,
-    successRate: 100,
-    skillBreakdown: { caption: 1 }
-  });
-  
-  return { default: MockUsage };
-});
-
-// Also mock the mongodb module directly
+// Mock the mongodb module directly to prevent real connections
 jest.mock('mongodb', () => ({
   MongoClient: {
     connect: jest.fn().mockResolvedValue({
@@ -147,11 +129,11 @@ jest.mock('mongodb', () => ({
           insertOne: jest.fn(),
           updateOne: jest.fn(),
           deleteOne: jest.fn(),
-        })
+        }),
       }),
       close: jest.fn(),
-    })
-  }
+    }),
+  },
 }));
 
 // Mock console methods to reduce noise in tests

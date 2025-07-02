@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Send, Settings, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -8,6 +8,24 @@ const PromptForm = ({ onSubmit, loading }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [useAnthropicPlanner, setUseAnthropicPlanner] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const textareaRef = useRef(null);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Cmd/Ctrl + Enter submits form
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        handleSubmit(e);
+      }
+      // '/' focuses prompt input (unless typing in input already)
+      if (e.key === '/' && document.activeElement !== textareaRef.current) {
+        e.preventDefault();
+        textareaRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [prompt, image]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -70,7 +88,7 @@ const PromptForm = ({ onSubmit, loading }) => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+    <div className="w-full max-w-4xl mx-auto glass-card shadow-xl overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-gradient-start to-gradient-end p-6">
         <h2 className="text-2xl font-bold text-white mb-2">DreamForge VLM</h2>
@@ -85,7 +103,7 @@ const PromptForm = ({ onSubmit, loading }) => {
           </label>
           
           {!imagePreview ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-moondream-blue transition-colors">
+            <div className="border-2 border-dashed border-moondream-purple/60 rounded-xl p-8 text-center hover:border-moondream-purple transition-colors bg-white/5 backdrop-blur">
               <input
                 id="image-upload"
                 type="file"
@@ -97,8 +115,8 @@ const PromptForm = ({ onSubmit, loading }) => {
                 htmlFor="image-upload" 
                 className="cursor-pointer flex flex-col items-center space-y-3"
               >
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Upload className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 bg-moondream-purple/20 rounded-full flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-moondream-purple" />
                 </div>
                 <div>
                   <p className="text-lg font-medium text-gray-700">
@@ -141,6 +159,7 @@ const PromptForm = ({ onSubmit, loading }) => {
             placeholder="e.g., What objects can you detect in this image? Where is the person standing? Describe what's happening in the scene..."
             className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-moondream-blue focus:border-transparent resize-none transition-all"
             disabled={loading}
+            ref={textareaRef}
           />
           <div className="flex justify-between text-xs text-gray-500">
             <span>Be specific for better results</span>

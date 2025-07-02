@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, Refresh } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, Refresh, DollarSign } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 export default function Usage() {
@@ -90,12 +90,12 @@ export default function Usage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
-                <Link href="/" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <Link href="/" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                   <span>Back to Home</span>
                 </Link>
                 <div className="w-px h-6 bg-gray-300"></div>
-                <h1 className="text-xl font-semibold text-gray-900">Usage Analytics</h1>
+                <h1 className="text-xl font-semibold text-white">Usage Analytics</h1>
               </div>
               
               <div className="flex items-center space-x-4">
@@ -135,19 +135,19 @@ export default function Usage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Calls</p>
-                  <p className="text-2xl font-bold text-gray-900">{summary.totalCalls}</p>
+                  <p className="text-2xl font-bold text-white">{summary.totalCalls}</p>
                 </div>
                 <TrendingUp className="w-8 h-8 text-blue-500" />
               </div>
               <p className="text-xs text-gray-500 mt-2">Last {timeRange} days</p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Success Rate</p>
@@ -158,7 +158,7 @@ export default function Usage() {
               <p className="text-xs text-gray-500 mt-2">{summary.successfulCalls}/{summary.totalCalls} successful</p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Avg Response Time</p>
@@ -173,7 +173,7 @@ export default function Usage() {
               <p className="text-xs text-gray-500 mt-2">Across all skills</p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="glass-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Top Skill</p>
@@ -190,12 +190,24 @@ export default function Usage() {
               </div>
               <p className="text-xs text-gray-500 mt-2">Most used skill</p>
             </div>
+
+            {/* Cost Card */}
+            <div className="glass-card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Estimated Cost</p>
+                  <p className="text-2xl font-bold text-emerald-600">{`$${summary.costUSD.toFixed(3)}`}</p>
+                </div>
+                <DollarSign className="w-8 h-8 text-emerald-500" />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">$0.002 per call</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Skill Breakdown */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Skill Usage Breakdown</h3>
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Skill Usage Breakdown</h3>
               
               {Object.keys(summary.skillBreakdown).length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
@@ -227,8 +239,8 @@ export default function Usage() {
             </div>
 
             {/* Performance Metrics */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance by Skill</h3>
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Performance by Skill</h3>
               
               {Object.keys(summary.skillBreakdown).length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
@@ -259,8 +271,8 @@ export default function Usage() {
 
           {/* Daily Trends (if detailed view is enabled) */}
           {showDetailed && detailed && detailed.dailyTrends && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Usage Trends</h3>
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Daily Usage Trends</h3>
               
               <ResponsiveContainer width="100%" height={400}>
                 <LineChart data={detailed.dailyTrends}>
@@ -288,9 +300,9 @@ export default function Usage() {
           )}
 
           {/* Recent History */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="glass-card">
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
               <p className="text-sm text-gray-600 mt-1">Latest {recentHistory.length} requests</p>
             </div>
             
@@ -315,11 +327,11 @@ export default function Usage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-700">
                   {recentHistory.map((record) => (
-                    <tr key={record.id} className="hover:bg-gray-50">
+                    <tr key={record.id} className="hover:bg-white/10">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
+                        <div className="text-sm text-gray-100 max-w-xs truncate">
                           {record.prompt}
                         </div>
                       </td>
@@ -334,7 +346,7 @@ export default function Usage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(record.timestamp).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-100">
                         {formatTime(record.responseTime)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

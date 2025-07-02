@@ -5,7 +5,25 @@ import { createMocks } from 'node-mocks-http';
 jest.mock('@anthropic-ai/sdk');
 jest.mock('../../lib/mongodb.js');
 jest.mock('../../lib/moondreamClient.js');
-jest.mock('../../models/Usage.js');
+jest.mock('../../models/Usage.js', () => {
+  const mockUsageInstance = {
+    save: jest.fn().mockResolvedValue({}),
+    markError: jest.fn().mockResolvedValue({}),
+  };
+
+  const MockUsage = jest.fn(() => mockUsageInstance);
+
+  // Static method mocks
+  MockUsage.getUsageSummary = jest.fn().mockResolvedValue({
+    totalCalls: 1,
+    successfulCalls: 1,
+    successRate: 100,
+    skillBreakdown: { caption: { count: 1, avgResponseTime: 50, successRate: 100 } },
+    timeRange: 7,
+  });
+
+  return { __esModule: true, default: MockUsage };
+});
 
 // Import handler after mocks are set up
 import handler from '../../pages/api/dream';
