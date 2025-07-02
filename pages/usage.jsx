@@ -85,11 +85,11 @@ export default function Usage() {
 
   // Generate skill distribution
   const generateSkillDistribution = (data) => {
-    if (!data?.bySkill) return [];
+    if (!data?.summary?.skillBreakdown) return [];
     
-    return Object.entries(data.bySkill).map(([skill, count]) => ({
+    return Object.entries(data.summary.skillBreakdown).map(([skill, stats]) => ({
       name: skill,
-      value: count
+      value: stats.count || 0
     }));
   };
 
@@ -173,7 +173,7 @@ export default function Usage() {
   const metrics = usageData ? [
     {
       title: 'Total Calls',
-      value: usageData.totalCalls?.toLocaleString() || '0',
+      value: usageData.summary?.totalCalls?.toLocaleString() || '0',
       change: '+12%',
       changeType: 'positive',
       subtitle: 'vs last period',
@@ -182,7 +182,7 @@ export default function Usage() {
     },
     {
       title: 'Success Rate',
-      value: `${Math.round((usageData.successfulCalls / Math.max(usageData.totalCalls, 1)) * 100)}%`,
+      value: `${usageData.summary?.successRate || 0}%`,
       change: '+2.1%',
       changeType: 'positive',
       subtitle: 'last 7 days',
@@ -191,7 +191,7 @@ export default function Usage() {
     },
     {
       title: 'Avg Response',
-      value: `${usageData.avgResponseTime || 0}ms`,
+      value: `${usageData.summary?.avgResponseTime || 0}ms`,
       change: '-15ms',
       changeType: 'positive',
       subtitle: 'faster',
@@ -200,8 +200,8 @@ export default function Usage() {
     },
     {
       title: 'Top Skill',
-      value: usageData.topSkill || 'caption',
-      change: `${Object.values(usageData.bySkill || {})[0] || 0}`,
+      value: usageData.summary?.topSkill || 'caption',
+      change: `${usageData.summary?.totalCalls || 0}`,
       changeType: 'neutral',
       subtitle: 'queries',
       icon: Target,
@@ -209,7 +209,7 @@ export default function Usage() {
     },
     {
       title: 'Est. Cost',
-      value: `$${usageData.estimatedCost || '0.00'}`,
+      value: `$${usageData.summary?.costUSD?.toFixed(3) || '0.000'}`,
       change: '+$0.05',
       changeType: 'neutral',
       subtitle: 'this month',
@@ -330,7 +330,7 @@ export default function Usage() {
           {/* Activity Feed */}
           <div className="mb-8">
             <ActivityFeed
-              activities={usageData?.history || []}
+              activities={usageData?.recentHistory || []}
               onRerun={handleActivityRerun}
               onView={handleActivityView}
             />

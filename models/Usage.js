@@ -85,41 +85,41 @@ UsageSchema.statics.getUsageSummary = async function(timeRange = 7) {
       $group: {
         _id: '$skill',
         count: { $sum: 1 },
-        avgResponseTime: { $avg: '$responseTime' },
+        avgResponseTime: { $avg: { $ifNull: ['$responseTime', 0] } },
         successRate: {
-          $avg: { $cond: ['$success', 1, 0] }
+          $avg: { $cond: [{ $ifNull: ['$success', true] }, 1, 0] }
         },
-        avgConfidence: { $avg: '$confidence' }
+        avgConfidence: { $avg: { $ifNull: ['$confidence', null] } }
       }
     }
   ];
   
   const skillStats = await this.aggregate(pipeline);
   
-  // Get total counts
+  // Get total counts with proper null handling
   const totalCalls = await this.countDocuments({
     timestamp: { $gte: startDate }
   });
   
   const successfulCalls = await this.countDocuments({
     timestamp: { $gte: startDate },
-    success: true
+    success: { $ne: false } // Count true and null as successful
   });
   
   return {
-    totalCalls,
-    successfulCalls,
-    successRate: totalCalls > 0 ? (successfulCalls / totalCalls) * 100 : 0,
+    totalCalls: totalCalls || 0,
+    successfulCalls: successfulCalls || 0,
+    successRate: totalCalls > 0 ? Math.round((successfulCalls / totalCalls) * 100) : 0,
     skillBreakdown: skillStats.reduce((acc, stat) => {
       acc[stat._id] = {
-        count: stat.count,
-        avgResponseTime: Math.round(stat.avgResponseTime),
-        successRate: Math.round(stat.successRate * 100),
+        count: stat.count || 0,
+        avgResponseTime: Math.round(stat.avgResponseTime || 0),
+        successRate: Math.round((stat.successRate || 0) * 100),
         avgConfidence: stat.avgConfidence ? Math.round(stat.avgConfidence * 100) : null
       };
       return acc;
     }, {}),
-    timeRange
+    timeRange: timeRange
   };
 };
 
