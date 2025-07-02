@@ -6,7 +6,7 @@ export default function HeroSection() {
       {/* Starfield backdrop placeholder; add starfield.svg in /public for effect */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-black bg-opacity-40" />
 
-      <h1 className="text-5xl md:text-6xl font-extrabold text-gradient text-center mb-6">
+      <h1 className="text-5xl md:text-6xl font-extrabold animate-gradient text-center mb-6">
         DreamForge – forge your own dreams
       </h1>
       <p className="max-w-xl mx-auto text-center text-gray-400 mb-8">

@@ -188,7 +188,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
-            {['result', 'analytics', 'metadata'].map((tab) => (
+            {['result', 'analytics', 'metadata', 'insights'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -412,6 +412,37 @@ const ResultOverlay = ({ result, image, onClose }) => {
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm font-medium block mb-2">Verifier Feedback</span>
                   <p className="text-xs text-gray-600 whitespace-pre-wrap">{feedback}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'insights' && result.analysis && (
+            <div className="space-y-6">
+              <h4 className="text-lg font-semibold">Explanation</h4>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {result.analysis.explanation}
+              </p>
+
+              {result.analysis.insights && result.analysis.insights.length > 0 && (
+                <div>
+                  <h5 className="font-semibold mb-2">Key Insights</h5>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+                    {result.analysis.insights.map((insight, idx) => (
+                      <li key={idx}>{insight}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.analysis.followUp && result.analysis.followUp.length > 0 && (
+                <div>
+                  <h5 className="font-semibold mb-2">Follow-Up Questions</h5>
+                  <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+                    {result.analysis.followUp.map((q, idx) => (
+                      <li key={idx}>{q}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>

@@ -205,6 +205,44 @@ Return JSON: { "verified": true|false, "feedback": "string" }`
       }
     }
 
+    /* -----------------------------------
+     *  Anthropic "Insight" step – generate narrative explanation
+     * -----------------------------------*/
+    let analysis = null;
+
+    if (process.env.ANTHROPIC_API_KEY) {
+      try {
+        const anthropicAnalyzer = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+        const analyzerRes = await anthropicAnalyzer.messages.create({
+          model: 'claude-3-haiku-20240307',
+          max_tokens: 300,
+          temperature: 0.5,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert vision assistant that turns raw computer-vision JSON into rich, user-friendly explanations. Return JSON only.'
+            },
+            {
+              role: 'user',
+              content: `The user asked: "${prompt}"
+Skill used: ${skill}
+Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n{ "explanation": string, "insights": string[], "followUp": string[] }`
+            }
+          ]
+        });
+
+        const analyzerText = analyzerRes.content[0].text.trim();
+        const parsedAnalysis = JSON.parse(analyzerText);
+
+        if (parsedAnalysis.explanation) {
+          analysis = parsedAnalysis;
+        }
+      } catch (analysisErr) {
+        logger.warn('Anthropic analysis failed', analysisErr.message);
+      }
+    }
+
     // -----------------------------------
     const totalDuration = Date.now() - startTime;
 
@@ -250,7 +288,8 @@ Return JSON: { "verified": true|false, "feedback": "string" }`
         dreamTime: dreamDuration,
         timestamp: new Date().toISOString()
       },
-      usage: usageSummary
+      usage: usageSummary,
+      analysis: analysis
     };
 
     logger.info('Dream request completed successfully', {

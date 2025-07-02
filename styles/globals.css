@@ -68,6 +68,14 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+  
+  .animate-gradient {
+    background-size: 200% 200%;
+    background-image: linear-gradient(45deg, theme('colors.gradient-start'), theme('colors.gradient-end'), #a855f7, #06b6d4);
+    animation: gradientShift 8s ease infinite;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 
 @keyframes spin {
@@ -77,6 +85,12 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 /* Custom scrollbar styles */

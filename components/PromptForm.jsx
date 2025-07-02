@@ -157,7 +157,7 @@ const PromptForm = ({ onSubmit, loading }) => {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="e.g., What objects can you detect in this image? Where is the person standing? Describe what's happening in the scene..."
-            className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-moondream-blue focus:border-transparent resize-none transition-all"
+            className="w-full h-32 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-moondream-blue focus:border-transparent resize-none transition-all placeholder-gray-600 dark:placeholder-gray-400"
             disabled={loading}
             ref={textareaRef}
           />

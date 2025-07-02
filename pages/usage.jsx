@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, Refresh, DollarSign } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, RefreshCcw, DollarSign } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 
 export default function Usage() {
@@ -126,7 +126,7 @@ export default function Usage() {
                   className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
                   title="Refresh data"
                 >
-                  <Refresh className="w-5 h-5" />
+                  <RefreshCcw className="w-5 h-5" />
                 </button>
               </div>
             </div>

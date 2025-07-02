@@ -2,7 +2,24 @@ import '@anthropic-ai/sdk/shims/node';
 import { createMocks } from 'node-mocks-http';
 
 // Mock all external dependencies before importing the handler
-jest.mock('@anthropic-ai/sdk');
+jest.mock('@anthropic-ai/sdk', () => {
+  const createMock = jest.fn()
+    .mockImplementationOnce(() => Promise.resolve({
+      content: [{ text: '{"skill":"caption","params":{}}' }]
+    }))
+    .mockImplementationOnce(() => Promise.resolve({
+      content: [{ text: '{"verified":true,"feedback":""}' }]
+    }))
+    .mockImplementationOnce(() => Promise.resolve({
+      content: [{ text: '{"explanation":"Image shows a scene","insights":["Insight 1"],"followUp":[]}' }]
+    }));
+
+  return {
+    Anthropic: jest.fn().mockImplementation(() => ({
+      messages: { create: createMock }
+    }))
+  };
+});
 jest.mock('../../lib/mongodb.js');
 jest.mock('../../lib/moondreamClient.js');
 jest.mock('../../models/Usage.js', () => {
@@ -160,5 +177,23 @@ describe('/api/dream', () => {
     const responseData = JSON.parse(res._getData());
     
     expect(responseData.error).toBe('Internal server error');
+  });
+
+  it('should include analysis field from Anthropic insight step', async () => {
+    const { req, res } = createMocks({
+      method: 'POST',
+      body: {
+        prompt: 'Describe this image',
+        image: 'dGVzdGltYWdl',
+        useAnthropicPlanner: true
+      },
+    });
+
+    await handler(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    const responseData = JSON.parse(res._getData());
+    expect(responseData.analysis).toBeDefined();
+    expect(responseData.analysis.explanation).toBe('Image shows a scene');
   });
 }); 
