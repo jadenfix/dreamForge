@@ -111,7 +111,16 @@ export default function Home() {
         )}
 
         {/* Main Form */}
-        <section className="px-4 sm:px-6 lg:px-8 -mt-24 pb-20">
+        <section id="full-playground" className="px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-100 mb-4">
+              Full Analysis Playground
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Upload any image and use advanced prompts for detailed analysis with object detection, 
+              point localization, visual Q&A, and smart captioning.
+            </p>
+          </div>
           <PromptForm onSubmit={handleSubmit} loading={loading} />
         </section>
 

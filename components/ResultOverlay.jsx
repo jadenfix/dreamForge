@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Eye, MapPin, MessageSquare, FileText, Clock, Zap, Copy, Download } from 'lucide-react';
+import { Eye, MapPin, MessageSquare, FileText, Clock, Zap, Copy, Download, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ResultOverlay = ({ result, image, onClose }) => {
@@ -30,31 +30,45 @@ const ResultOverlay = ({ result, image, onClose }) => {
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeWidth = 3;
-    ctx.font = '16px Arial';
-
-    result.result.objects.forEach((obj, index) => {
-      const [x, y, width, height] = obj.bbox;
-      const color = getColorForIndex(index);
+    // Animate bounding boxes appearing
+    let animationFrame = 0;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeWidth = 3;
+      ctx.font = '16px Arial';
       
-      // Draw bounding box
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(x, y, width - x, height - y);
+      const progress = Math.min(animationFrame / 30, 1); // 30 frame animation
       
-      // Draw label background
-      const label = `${obj.label} (${Math.round(obj.confidence * 100)}%)`;
-      const textMetrics = ctx.measureText(label);
-      const labelHeight = 20;
+      result.result.objects.forEach((obj, index) => {
+        const [x, y, width, height] = obj.bbox;
+        const color = getColorForIndex(index);
+        const alpha = progress * (0.3 + (index * 0.1)); // Staggered appearance
+        
+        // Draw bounding box with fade-in
+        ctx.strokeStyle = color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, width - x, height - y);
+        
+        // Draw label background
+        const label = `${obj.label} (${Math.round(obj.confidence * 100)}%)`;
+        const textMetrics = ctx.measureText(label);
+        const labelHeight = 20;
+        
+        ctx.fillStyle = color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+        ctx.fillRect(x, y - labelHeight, textMetrics.width + 10, labelHeight);
+        
+        // Draw label text
+        ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+        ctx.fillText(label, x + 5, y - 5);
+      });
       
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y - labelHeight, textMetrics.width + 10, labelHeight);
-      
-      // Draw label text
-      ctx.fillStyle = 'white';
-      ctx.fillText(label, x + 5, y - 5);
-    });
+      if (progress < 1) {
+        animationFrame++;
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    animate();
   };
 
   const drawPoints = () => {
@@ -141,6 +155,56 @@ const ResultOverlay = ({ result, image, onClose }) => {
     }
   };
 
+  const WhyButton = ({ skill, params }) => {
+    const [showExplanation, setShowExplanation] = useState(false);
+    const [explanation, setExplanation] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const fetchExplanation = async () => {
+      if (explanation) {
+        setShowExplanation(!showExplanation);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        // This would call your "Why?" explanation endpoint
+        setExplanation(`I chose "${skill}" because your prompt suggested ${
+          skill === 'detect' ? 'finding objects or bounding boxes' :
+          skill === 'point' ? 'locating specific positions or coordinates' :
+          skill === 'query' ? 'answering questions about the image content' :
+          'generating a description or caption'
+        }. The AI router analyzed your request and selected the most appropriate analysis method.`);
+        setShowExplanation(true);
+      } catch (error) {
+        toast.error('Failed to load explanation');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <div className="relative">
+        <button
+          onClick={fetchExplanation}
+          className="p-1.5 text-gray-400 hover:text-white transition-colors rounded-md hover:bg-white/10"
+          title="Why was this skill chosen?"
+        >
+          <HelpCircle className="w-4 h-4" />
+        </button>
+        
+        {showExplanation && (
+          <div className="absolute top-8 right-0 w-72 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg p-4 z-50 animate-in slide-in-from-top-2">
+            <div className="text-sm text-gray-200">
+              <h4 className="font-medium mb-2">Why this skill?</h4>
+              <p className="text-gray-300">{explanation}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className={`bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl ring-4 ${typeof verified === 'boolean' ? (verified ? 'ring-green-400' : 'ring-red-400') : 'ring-transparent'}`}>
@@ -165,6 +229,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
                 )}
               </div>
             </div>
+            <WhyButton skill={skill} params={result.params} />
             <div className="flex items-center space-x-2">
               <button
                 onClick={downloadResult}

@@ -5,6 +5,7 @@ import { ArrowLeft, TrendingUp, Clock, CheckCircle, AlertCircle, RefreshCcw, Dol
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import KPICard from '../components/KPICard.jsx';
 import { SkeletonCard, SkeletonChart, SkeletonTable } from '../components/SkeletonLoader.jsx';
+import AuditFeed from '../components/AuditFeed.jsx';
 
 export default function Usage() {
   const [usageData, setUsageData] = useState(null);
@@ -285,8 +286,14 @@ export default function Usage() {
             </div>
           )}
 
-          {/* Recent History */}
-          <div className="glass-card">
+          {/* Recent History with Re-run */}
+          <AuditFeed onRerun={(data) => {
+            // Could integrate with main form or show modal
+            console.log('Re-running:', data);
+          }} />
+
+          {/* Original Recent History Table - keep for comparison */}
+          <div className="glass-card mt-8">
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
               <p className="text-sm text-gray-600 mt-1">Latest {recentHistory.length} requests</p>
