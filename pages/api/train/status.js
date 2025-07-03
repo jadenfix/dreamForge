@@ -1,5 +1,4 @@
-import db from '../../../lib/mongodb.js';
-import TrainingJob from '../../../models/TrainingJob.js';
+import { jobStorage } from '../../../lib/trainWorker.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -9,10 +8,16 @@ export default async function handler(req, res) {
   const { jobId } = req.query;
   if (!jobId) return res.status(400).json({ error: 'jobId is required' });
 
-  await db();
+  try {
+    const jobDoc = jobStorage.get(jobId);
+    
+    if (!jobDoc) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
 
-  const jobDoc = await TrainingJob.findById(jobId).lean();
-  if (!jobDoc) return res.status(404).json({ error: 'Job not found' });
-
-  return res.status(200).json(jobDoc);
+    return res.status(200).json(jobDoc);
+  } catch (err) {
+    console.error('Status API error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 } 

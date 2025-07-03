@@ -49,7 +49,7 @@ export default function Train() {
       const res = await fetch('/api/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataset, rewardFnId: null, curriculum: goalCurriculum }),
+        body: JSON.stringify({ datasetId: dataset, rewardFnId: selectedPreset?.id, curriculum: goalCurriculum }),
       });
       const data = await res.json();
       if (res.ok) {
