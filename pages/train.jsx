@@ -8,15 +8,17 @@ import DatasetUploader from '../components/train/DatasetUploader.jsx';
 import toast from 'react-hot-toast';
 import Stepper from '../components/train/Stepper.jsx';
 import RewardPresetLibrary from '../components/train/RewardPresetLibrary.jsx';
+import GoalDefinition from '../components/train/GoalDefinition.jsx';
 
 export default function Train() {
   const [dataset, setDataset] = useState('');
   const [reward, setReward] = useState('');
   const [curriculum, setCurriculum] = useState([]);
+  const [goalCurriculum, setGoalCurriculum] = useState([]);
   const [jobId, setJobId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(null);
-  const [step, setStep] = useState(0); // 0: dataset,1:preset,2:advanced,3:launch
+  const [step, setStep] = useState(0); // 0: dataset,1:preset,2:goal,3:launch
 
   // Introspect dataset path and prefill reward when changed
   const introspect = async (ds) => {
@@ -47,7 +49,7 @@ export default function Train() {
       const res = await fetch('/api/train', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dataset, rewardFnId: null, curriculum }),
+        body: JSON.stringify({ dataset, rewardFnId: null, curriculum: goalCurriculum }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -64,7 +66,7 @@ export default function Train() {
     }
   };
 
-  const steps = ['Dataset', 'Reward', 'Advanced', 'Launch'];
+  const steps = ['Dataset', 'Reward', 'Goal', 'Launch'];
 
   const cliSnippet = `npx dreamforge train \
   --dataset ${dataset || './my-data.zip'} \
@@ -125,19 +127,13 @@ export default function Train() {
 
           {step === 2 && (
             <div className="space-y-4">
-              {/* Advanced accordion */}
-              <details className="border rounded-lg p-4">
-                <summary className="cursor-pointer font-semibold">Advanced Reward Editing</summary>
-                <div className="mt-4">
-                  <RewardBuilder value={reward} onChange={setReward} />
-                </div>
-              </details>
+              <GoalDefinition value={goalCurriculum} onChange={setGoalCurriculum} datasetDesc={dataset} rewardName={selectedPreset?.name} />
 
               <div className="flex justify-between">
                 <button className="btn-secondary" onClick={() => setStep(1)}>
                   Back
                 </button>
-                <button className="btn-primary" onClick={() => setStep(3)}>
+                <button className="btn-primary" onClick={() => setStep(3)} disabled={goalCurriculum.length===0}>
                   Next
                 </button>
               </div>

@@ -101,6 +101,7 @@ lerna-debug.log*
 # Temporary folders
 tmp/
 temp/
+uploads/
 
 # Editor directories and files
 .vscode/*

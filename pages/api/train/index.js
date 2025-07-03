@@ -10,14 +10,14 @@ export default async function handler(req, res) {
   await db();
 
   try {
-    const { dataset, rewardFnId, curriculum } = req.body;
+    const { datasetId, rewardFnId, curriculum } = req.body;
 
-    if (!dataset) {
-      return res.status(400).json({ error: 'dataset is required' });
+    if (!datasetId) {
+      return res.status(400).json({ error: 'datasetId is required' });
     }
 
-    const jobDoc = await TrainingJob.create({ dataset, rewardFnId, curriculum });
-    await addTrainingJob({ jobId: jobDoc._id });
+    const jobDoc = await TrainingJob.create({ datasetId, rewardFnId, curriculum });
+    await addTrainingJob({ jobId: jobDoc._id, datasetId });
 
     return res.status(200).json({ jobId: jobDoc._id });
   } catch (err) {
