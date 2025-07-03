@@ -23,6 +23,7 @@ export default function Layout({ children }) {
             <Link href="/" className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105">Home</Link>
             <Link href="/usage" className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105">Analytics</Link>
             <Link href="/train" className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105">Train</Link>
+            <Link href="/train-guide" className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105">Train Docs</Link>
             <a href="https://moondream.ai" target="_blank" rel="noopener noreferrer" className="text-gray-800 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-200 hover:scale-105">About Moondream</a>
             <ThemeToggle />
             <a href="https://github.com/jadenfix/dreamForge" target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-white/20 rounded-md text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 transition-all duration-200 hover:scale-105">
@@ -55,6 +56,7 @@ export default function Layout({ children }) {
           <Link href="/" onClick={() => setMenuOpen(false)} className="text-2xl font-semibold text-white">Home</Link>
           <Link href="/usage" onClick={() => setMenuOpen(false)} className="text-2xl font-semibold text-white">Analytics</Link>
           <Link href="/train" onClick={() => setMenuOpen(false)} className="text-2xl font-semibold text-white">Train</Link>
+          <Link href="/train-guide" onClick={() => setMenuOpen(false)} className="text-2xl font-semibold text-white">Train Docs</Link>
           <a href="https://moondream.ai" target="_blank" rel="noopener noreferrer" className="text-2xl font-semibold text-white" onClick={() => setMenuOpen(false)}>
             About Moondream
           </a>
