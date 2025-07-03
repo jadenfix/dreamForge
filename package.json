@@ -12,7 +12,8 @@
     "test:watch": "jest --watch",
     "type-check": "echo 'Type checking would run here'",
     "format": "prettier --write .",
-    "clean": "rm -rf .next out dist"
+    "clean": "rm -rf .next out dist",
+    "worker": "node lib/trainWorker.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.55.1",
@@ -27,7 +28,11 @@
     "react-dropzone": "^14.2.0",
     "react-hot-toast": "^2.4.0",
     "recharts": "^2.8.0",
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "bullmq": "^4.7.1",
+    "ioredis": "^5.3.1",
+    "@headlessui/react": "^2.2.4",
+    "react-beautiful-dnd": "^13.1.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
