@@ -60,7 +60,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '' }) {
 function StatCard({ icon: Icon, value, label, gradient, delay = 0 }) {
   return (
     <div 
-      className="group relative p-8 rounded-2xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl hover:from-white/[0.12] hover:to-white/[0.04] transition-all duration-500 hover:scale-105"
+      className="group relative p-8 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-white/[0.08] dark:to-white/[0.02] border border-gray-200 dark:border-white/[0.05] backdrop-blur-xl hover:from-gray-200 hover:to-gray-100 dark:hover:from-white/[0.12] dark:hover:to-white/[0.04] transition-all duration-500 hover:scale-105"
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Background gradient effect */}
@@ -73,18 +73,18 @@ function StatCard({ icon: Icon, value, label, gradient, delay = 0 }) {
         </div>
         
         {/* Value */}
-        <div className="text-3xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300">
+        <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text transition-all duration-300">
           {value}
         </div>
         
         {/* Label */}
-        <div className="text-gray-400 text-sm font-medium group-hover:text-gray-300 transition-colors duration-300">
+        <div className="text-gray-600 dark:text-gray-400 text-sm font-medium group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors duration-300">
           {label}
         </div>
       </div>
       
       {/* Subtle pulse effect */}
-      <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300" />
+      <div className="absolute inset-0 rounded-2xl bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300" />
     </div>
   );
 }
@@ -104,14 +104,14 @@ export default function StatsSection() {
             <span className="text-sm font-medium text-purple-300">Platform Statistics</span>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
             Trusted by{' '}
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
               Thousands
             </span>
           </h2>
           
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             Join the growing community of developers, researchers, and enterprises 
             building the future with advanced vision AI technology.
           </p>
@@ -154,7 +154,7 @@ export default function StatsSection() {
 
         {/* Bottom CTA */}
         <div className="text-center mt-16">
-          <div className="inline-flex items-center space-x-2 text-sm text-gray-400">
+          <div className="inline-flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span>All systems operational • Real-time analytics available</span>
           </div>
