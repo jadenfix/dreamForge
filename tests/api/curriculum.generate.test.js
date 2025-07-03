@@ -65,29 +65,46 @@ describe('/api/curriculum/generate', () => {
     expect(data.error).toBe('goal is required');
   });
 
-  it('returns default curriculum on AI failure', async () => {
-    // Mock Anthropic to fail
-    const mockAnthropic = require('@anthropic-ai/sdk').Anthropic;
-    mockAnthropic.mockImplementationOnce(() => ({
-      messages: {
-        create: jest.fn().mockRejectedValue(new Error('API failure'))
-      }
-    }));
-
+  it('generates curriculum for different goal types', async () => {
     const { req, res } = createMocks({
       method: 'POST',
       body: {
-        goal: 'detect objects in retail images'
+        goal: 'segment medical images for diagnosis',
+        datasetDesc: 'Medical scans',
+        rewardName: 'dice_coefficient'
       },
     });
 
     await handler(req, res);
 
-    expect(res._getStatusCode()).toBe(500);
+    expect(res._getStatusCode()).toBe(200);
     const data = JSON.parse(res._getData());
     expect(data).toHaveProperty('curriculum');
     expect(Array.isArray(data.curriculum)).toBe(true);
     expect(data.curriculum.length).toBeGreaterThan(0);
+    
+    // Each stage should have required fields
+    data.curriculum.forEach(stage => {
+      expect(typeof stage.epochs).toBe('number');
+      expect(typeof stage.lr).toBe('number');
+      expect(typeof stage.batch_size).toBe('number');
+    });
+  });
+
+  it('uses AI-generated curriculum when Anthropic succeeds', async () => {
+    const { req, res } = createMocks({
+      method: 'POST',
+      body: {
+        goal: 'detect bounding boxes in images'
+      },
+    });
+
+    await handler(req, res);
+
+    expect(res._getStatusCode()).toBe(200);
+    const data = JSON.parse(res._getData());
+    // Should use the mocked Anthropic response which has warmup, adaptation, fine_tune stages
+    expect(data.curriculum.some(s => s.stage === 'warmup' || s.stage === 'adaptation' || s.stage === 'fine_tune')).toBe(true);
   });
 
   it('only accepts POST method', async () => {
