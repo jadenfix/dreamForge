@@ -51,8 +51,7 @@ export default function MiniPlayground() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: 'Describe what you see in this image',
-            image: base64,
-            useAnthropicPlanner: true
+            image: base64
           })
         });
 
@@ -91,8 +90,7 @@ export default function MiniPlayground() {
         <div className="bg-gradient-to-r from-gradient-start/20 to-gradient-end/20 p-4 border-b border-white/10">
           <div className="flex items-center space-x-2">
             <Sparkles className="w-5 h-5 text-gradient-start" />
-            <h3 className="font-semibold text-gray-100">Live Demo</h3>
-            <span className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded-full">Beta</span>
+            <h3 className="font-semibold text-gray-100">Live Demo – Moondream API</h3>
           </div>
           <p className="text-sm text-gray-400 mt-1">Drop an image to see instant AI analysis</p>
         </div>

@@ -1,4 +1,3 @@
-import { Anthropic } from '@anthropic-ai/sdk';
 import { z } from 'zod';
 import moondreamClient from '../../lib/moondreamClient.js';
 import refineRules from '../../lib/refineRules.js';
@@ -25,58 +24,8 @@ export default async function handler(req, res) {
     // Step 1: Validate input
     const { prompt, image } = DreamSchema.parse(req.body);
 
-    // Step 2: First try Anthropic for intelligent routing
-    let skill = 'caption'; // default fallback
-    let params = {};
-
-    if (process.env.ANTHROPIC_API_KEY) {
-      try {
-        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-        const planRes = await anthropic.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 128,
-          temperature: 0.1,
-          messages: [{
-            role: 'user',
-            content: `You are a router for a visual AI system. Given the user request: "${prompt}"
-        
-Analyze this request and return ONLY a JSON object with this exact structure:
-{
-  "skill": "detect" | "point" | "query" | "caption",
-  "params": {}
-}
-
-Skills:
-- "detect": Find/identify objects in the image
-- "point": Locate specific coordinates/positions  
-- "query": Answer questions about the image
-- "caption": Generate descriptions of the image
-
-Choose the most appropriate skill and include relevant parameters.`
-          }]
-        });
-
-        const planText = planRes.content[0].text.trim();
-        const parsedPlan = JSON.parse(planText);
-
-        if (['detect', 'point', 'query', 'caption'].includes(parsedPlan.skill)) {
-          skill = parsedPlan.skill;
-          params = parsedPlan.params || {};
-          logger.info('Anthropic planning successful', { skill, params });
-        }
-      } catch (anthropicError) {
-        logger.warn('Anthropic planning failed, using fallback', anthropicError.message);
-      }
-    }
-
-    // If Anthropic failed, use local rules
-    if (skill === 'caption' && Object.keys(params).length === 0) {
-      const fallback = refineRules(prompt);
-      skill = fallback.skill;
-      params = fallback.params;
-      logger.info('Using fallback rules', { skill, params });
-    }
+    // Determine the appropriate Moondream skill using local rules
+    const { skill, params } = refineRules(prompt);
 
     // Create usage record (in memory if MongoDB fails)
     const usageData = {
@@ -161,84 +110,10 @@ Choose the most appropriate skill and include relevant parameters.`
     const dreamDuration = Date.now() - dreamStartTime;
 
     /* -----------------------------------
-     *  Second Anthropic "Verifier" step
+     *  Moondream response is used as-is without external verification
      * -----------------------------------*/
-    let verified = true;
-    let feedback = '';
-
-    if (process.env.ANTHROPIC_API_KEY) {
-      try {
-        const anthropicVerifier = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-        const verifierRes = await anthropicVerifier.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 128,
-          temperature: 0,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a strict visual QA verifier.'
-            },
-            {
-              role: 'user',
-              content: `User prompt: "${prompt}"
-Moondream raw response JSON:\n\n\`
-${JSON.stringify(moondreamResponse, null, 2)}\n\`
-
-Return JSON: { "verified": true|false, "feedback": "string" }`
-            }
-          ]
-        });
-
-        const verifierText = verifierRes.content[0].text.trim();
-        const parsedVerifier = JSON.parse(verifierText);
-
-        if (typeof parsedVerifier.verified === 'boolean') {
-          verified = parsedVerifier.verified;
-          feedback = parsedVerifier.feedback || '';
-        }
-      } catch (verErr) {
-        logger.warn('Anthropic verifier failed, defaulting to verified=true', verErr.message);
-      }
-    }
-
-    /* -----------------------------------
-     *  Anthropic "Insight" step – generate narrative explanation
-     * -----------------------------------*/
-    let analysis = null;
-
-    if (process.env.ANTHROPIC_API_KEY) {
-      try {
-        const anthropicAnalyzer = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-        const analyzerRes = await anthropicAnalyzer.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 300,
-          temperature: 0.5,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert vision assistant that turns raw computer-vision JSON into rich, user-friendly explanations. Return JSON only.'
-            },
-            {
-              role: 'user',
-              content: `The user asked: "${prompt}"
-Skill used: ${skill}
-Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n{ "explanation": string, "insights": string[], "followUp": string[] }`
-            }
-          ]
-        });
-
-        const analyzerText = analyzerRes.content[0].text.trim();
-        const parsedAnalysis = JSON.parse(analyzerText);
-
-        if (parsedAnalysis.explanation) {
-          analysis = parsedAnalysis;
-        }
-      } catch (analysisErr) {
-        logger.warn('Anthropic analysis failed', analysisErr.message);
-      }
-    }
+    const verified = true;
+    const feedback = '';
 
     // -----------------------------------
     const totalDuration = Date.now() - startTime;
@@ -282,7 +157,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
         dataStorage: usageRecord.save.toString().includes('inMemoryUsageData') ? 'memory' : 'mongodb'
       },
       usage: usageSummary,
-      analysis: analysis
+      analysis: null
     };
 
     logger.info('Dream request completed successfully', {

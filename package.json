@@ -2,6 +2,7 @@
   "name": "dreamforge",
   "version": "1.0.0",
   "description": "Production-grade VLM platform - From Prompt to Vision Models",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",

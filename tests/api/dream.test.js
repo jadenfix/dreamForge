@@ -107,13 +107,12 @@ describe('/api/dream', () => {
     expect(responseData.error).toBe('Validation failed');
   });
 
-  it('should handle successful dream request with fallback rules', async () => {
+  it('should handle successful dream request with local rule routing', async () => {
     const { req, res } = createMocks({
       method: 'POST',
       body: {
         prompt: 'Describe this image',
-        image: 'dGVzdGltYWdl', // base64 encoded 'testimage'
-        useAnthropicPlanner: false
+        image: 'dGVzdGltYWdl' // base64 encoded 'testimage'
       },
     });
 
@@ -129,34 +128,6 @@ describe('/api/dream', () => {
     expect(responseData.usage).toBeDefined();
   });
 
-  it('should handle Anthropic API errors gracefully', async () => {
-    // Mock Anthropic to throw error
-    const { Anthropic } = require('@anthropic-ai/sdk');
-    const mockAnthropic = {
-      messages: {
-        create: jest.fn().mockRejectedValue(new Error('Anthropic API error'))
-      }
-    };
-    Anthropic.mockImplementation(() => mockAnthropic);
-
-    const { req, res } = createMocks({
-      method: 'POST',
-      body: {
-        prompt: 'What is in this image?',
-        image: 'dGVzdGltYWdl',
-        useAnthropicPlanner: true
-      },
-    });
-
-    await handler(req, res);
-
-    expect(res._getStatusCode()).toBe(200);
-    const responseData = JSON.parse(res._getData());
-    
-    expect(responseData.success).toBe(true);
-    expect(responseData.skill).toBe('query'); // Should fall back to rule-based selection
-  });
-
   it('should handle moondream API errors', async () => {
     // Mock moondream client to throw error
     const mockMoondreamClient = require('../../lib/moondreamClient.js').default;
@@ -166,8 +137,7 @@ describe('/api/dream', () => {
       method: 'POST',
       body: {
         prompt: 'Find objects in this image',
-        image: 'dGVzdGltYWdl',
-        useAnthropicPlanner: false
+        image: 'dGVzdGltYWdl'
       },
     });
 
@@ -177,40 +147,5 @@ describe('/api/dream', () => {
     const responseData = JSON.parse(res._getData());
     
     expect(responseData.error).toBe('Internal server error');
-  });
-
-  it('should include analysis field from Anthropic insight step', async () => {
-    // Setup fresh mocks for this test
-    const { Anthropic } = require('@anthropic-ai/sdk');
-    const mockCreate = jest.fn()
-      .mockResolvedValueOnce({ // Planning step
-        content: [{ text: '{"skill":"caption","params":{}}' }]
-      })
-      .mockResolvedValueOnce({ // Verification step
-        content: [{ text: '{"verified":true,"feedback":""}' }]
-      })
-      .mockResolvedValueOnce({ // Insight step
-        content: [{ text: '{"explanation":"Image shows a scene","insights":["Insight 1"],"followUp":[]}' }]
-      });
-
-    Anthropic.mockImplementation(() => ({
-      messages: { create: mockCreate }
-    }));
-
-    const { req, res } = createMocks({
-      method: 'POST',
-      body: {
-        prompt: 'Describe this image',
-        image: 'dGVzdGltYWdl',
-        useAnthropicPlanner: true
-      },
-    });
-
-    await handler(req, res);
-
-    expect(res._getStatusCode()).toBe(200);
-    const responseData = JSON.parse(res._getData());
-    expect(responseData.analysis).toBeDefined();
-    expect(responseData.analysis.explanation).toBe('Image shows a scene');
   });
 }); 

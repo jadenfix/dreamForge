@@ -30,17 +30,15 @@ describe('/api/dream - Real Data Pipeline', () => {
 
   beforeEach(() => {
     // Set required environment variables
-    process.env.ANTHROPIC_API_KEY = 'test-key';
     process.env.MOONDREAM_KEY = 'test-key';
   });
 
-  it('should use real Anthropic AI for routing', async () => {
+  it('should route prompt to correct Moondream skill using local rules', async () => {
     const { req, res } = createMocks({
       method: 'POST',
       body: {
         prompt: 'find the red car in this image',
-        image: testImageBase64,
-        useAnthropicPlanner: true
+        image: testImageBase64
       }
     });
 
@@ -52,18 +50,19 @@ describe('/api/dream - Real Data Pipeline', () => {
     expect(res._getStatusCode()).toBe(200);
     expect(response.success).toBe(true);
     
-    // Verify Anthropic routing worked (should be 'detect' for 'find the red car')
+    // Verify local rule routing worked (should be 'detect' for 'find the red car')
     expect(response.skill).toBe('detect');
     expect(response.params).toBeDefined();
     
-    // Check that we have analysis from Anthropic
-    expect(response.analysis).toBeDefined();
+    // Analysis field is now null when not using Anthropic
+    expect(response.analysis).toBeNull();
     expect(response.verified).toBeDefined();
     
-    console.log('✅ Real Anthropic routing result:', {
+    console.log('✅ Real Moondream result:', {
       skill: response.skill,
-      params: response.params,
-      hasAnalysis: !!response.analysis
+      resultType: typeof response.result,
+      hasCaption: !!response.result.caption,
+      confidence: response.result.confidence
     });
   });
 
@@ -72,8 +71,7 @@ describe('/api/dream - Real Data Pipeline', () => {
       method: 'POST',
       body: {
         prompt: 'describe this image',
-        image: testImageBase64,
-        useAnthropicPlanner: false // Use fallback to ensure we test Moondream
+        image: testImageBase64
       }
     });
 
