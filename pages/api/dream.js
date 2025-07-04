@@ -24,10 +24,11 @@ export default async function handler(req, res) {
     // Step 1: Validate input
     const { prompt, image } = DreamSchema.parse(req.body);
 
-    // Determine the appropriate Moondream skill using local rules
+    // Step 2: Determine the appropriate Moondream skill using local rules (no Anthropic dependency)
     const { skill, params } = refineRules(prompt);
+    logger.debug('Analyzing prompt with fallback rules:', { skill, params });
 
-    // Create usage record (in memory if MongoDB fails)
+    // Step 3: Create usage record (in memory if MongoDB fails)
     const usageData = {
       prompt,
       skill,
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
       success: true
     };
 
-    // Try to use MongoDB first
+    // Try to use MongoDB first, fallback to in-memory
     try {
       const connectToDatabase = (await import('../../lib/mongodb.js')).default;
       const Usage = (await import('../../models/Usage.js')).default;
@@ -47,6 +48,7 @@ export default async function handler(req, res) {
       usageRecord = new Usage(usageData);
       logger.info('Using MongoDB for usage tracking');
     } catch (dbError) {
+      logger.error('MongoDB connection error:', dbError);
       // Fall back to in-memory storage
       usageRecord = {
         ...usageData,
@@ -66,62 +68,63 @@ export default async function handler(req, res) {
       logger.warn('MongoDB unavailable, using in-memory storage');
     }
 
-    // Step 3: Convert base64 to buffer for Moondream
+    // Step 4: Convert base64 to buffer for Moondream
     const imageBuffer = Buffer.from(image, 'base64');
     
-    // Step 4: Call Moondream API
+    // Step 5: Call Moondream API - this is the main processing step
+    logger.info('Calling Moondream caption API');
     const dreamStartTime = Date.now();
     
     let moondreamResponse;
-    switch (skill) {
-      case 'detect':
-        moondreamResponse = await moondreamClient.detect({
-          image: imageBuffer,
-          threshold: params.threshold || 0.5,
-          target: params.target
-        });
-        break;
-      
-      case 'point':
-        moondreamResponse = await moondreamClient.point({
-          image: imageBuffer,
-          query: params.query || prompt
-        });
-        break;
-      
-      case 'query':
-        moondreamResponse = await moondreamClient.query({
-          image: imageBuffer,
-          question: params.question || prompt
-        });
-        break;
-      
-      case 'caption':
-        moondreamResponse = await moondreamClient.caption({
-          image: imageBuffer,
-          style: params.style
-        });
-        break;
-      
-      default:
-        throw new Error(`Unknown skill: ${skill}`);
+    try {
+      switch (skill) {
+        case 'detect':
+          moondreamResponse = await moondreamClient.detect({
+            image: imageBuffer,
+            threshold: params.threshold || 0.5,
+            target: params.target || 'objects'
+          });
+          break;
+        
+        case 'point':
+          moondreamResponse = await moondreamClient.point({
+            image: imageBuffer,
+            query: params.query || prompt
+          });
+          break;
+        
+        case 'query':
+          moondreamResponse = await moondreamClient.query({
+            image: imageBuffer,
+            question: params.question || prompt
+          });
+          break;
+        
+        case 'caption':
+        default:
+          moondreamResponse = await moondreamClient.caption({
+            image: imageBuffer,
+            style: params.style || 'normal'
+          });
+          break;
+      }
+    } catch (moondreamError) {
+      logger.error('Moondream caption error:', moondreamError);
+      throw new Error(`Moondream API failed: ${moondreamError.message}`);
     }
 
     const dreamDuration = Date.now() - dreamStartTime;
 
-    /* -----------------------------------
-     *  Moondream response is used as-is without external verification
-     * -----------------------------------*/
+    // Step 6: Mark as verified (no external verification needed)
     const verified = true;
     const feedback = '';
 
-    // -----------------------------------
     const totalDuration = Date.now() - startTime;
 
-    // Step 5: Update usage record with results
+    // Step 7: Update usage record with results
     usageRecord.responseTime = totalDuration;
     usageRecord.resultSize = JSON.stringify(moondreamResponse).length;
-    usageRecord.success = verified; // mark success according to verification
+    usageRecord.success = verified;
     
     // Extract confidence if available
     if (moondreamResponse.confidence) {
@@ -134,7 +137,7 @@ export default async function handler(req, res) {
 
     await usageRecord.save();
 
-    // Step 6: Get usage summary for response
+    // Step 8: Get usage summary for response
     let usageSummary = {
       totalCalls: getUsageCount(),
       successRate: Math.round((getSuccessfulUsageCount() / Math.max(getUsageCount(), 1)) * 100),
@@ -142,7 +145,7 @@ export default async function handler(req, res) {
       timeRange: 7
     };
 
-    // Step 7: Return enriched response
+    // Step 9: Return response (no Anthropic analysis needed)
     const response = {
       success: true,
       skill,
@@ -157,7 +160,7 @@ export default async function handler(req, res) {
         dataStorage: usageRecord.save.toString().includes('inMemoryUsageData') ? 'memory' : 'mongodb'
       },
       usage: usageSummary,
-      analysis: null
+      analysis: null // No Anthropic analysis - keeping it simple and fast
     };
 
     logger.info('Dream request completed successfully', {
@@ -203,4 +206,4 @@ export const config = {
       sizeLimit: '10mb',
     },
   },
-} 
+}; 
