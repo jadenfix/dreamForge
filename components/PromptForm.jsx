@@ -1,14 +1,30 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Upload, Send, Settings, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const PromptForm = ({ onSubmit, loading }) => {
+const PromptForm = forwardRef(({ onSubmit, loading }, ref) => {
   const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [useAnthropicPlanner, setUseAnthropicPlanner] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const textareaRef = useRef(null);
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    setPrompt: (newPrompt) => {
+      setPrompt(newPrompt);
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    },
+    getPrompt: () => prompt,
+    clearForm: () => {
+      setPrompt('');
+      setImage(null);
+      setImagePreview(null);
+    }
+  }));
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -82,9 +98,6 @@ const PromptForm = ({ onSubmit, loading }) => {
   const clearImage = () => {
     setImage(null);
     setImagePreview(null);
-    // Reset file input
-    const fileInput = document.getElementById('image-upload');
-    if (fileInput) fileInput.value = '';
   };
 
   return (
@@ -260,6 +273,8 @@ const PromptForm = ({ onSubmit, loading }) => {
       </form>
     </div>
   );
-};
+});
+
+PromptForm.displayName = 'PromptForm';
 
 export default PromptForm; 

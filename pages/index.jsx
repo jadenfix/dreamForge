@@ -12,13 +12,17 @@ import {
   ArrowRight,
   Sparkles,
   Code,
-  Globe
+  Globe,
+  Upload,
+  Eye,
+  MessageSquare,
+  MapPin
 } from 'lucide-react';
 
 import Layout from '../components/Layout';
 import PromptForm from '../components/PromptForm';
 import ResultOverlay from '../components/ResultOverlay';
-import HeroSection from '../components/HeroSection.jsx';
+import HeroSection from '../components/HeroSection';
 import FeatureCard from '../components/FeatureCard';
 import StatsSection from '../components/StatsSection';
 import TestimonialSection from '../components/TestimonialSection';
@@ -28,6 +32,7 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [currentImage, setCurrentImage] = useState(null);
+  const [promptFormRef, setPromptFormRef] = useState(null);
 
   // Simulate progress bar during loading
   useEffect(() => {
@@ -83,6 +88,12 @@ export default function Home() {
   const closeResult = () => {
     setResult(null);
     setCurrentImage(null);
+  };
+
+  const handleExampleClick = (promptText) => {
+    if (promptFormRef && promptFormRef.setPrompt) {
+      promptFormRef.setPrompt(promptText);
+    }
   };
 
   const features = [
@@ -163,16 +174,39 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>DreamForge - AI-Powered Vision Analysis</title>
-        <meta name="description" content="Transform your vision with production-grade VLM platform powered by Moondream and Anthropic AI" />
+        <title>DreamForge - AI Vision Platform</title>
+        <meta name="description" content="Production-grade Visual Language Model platform powered by Moondream AI and Anthropic Claude. Transform images into insights with natural language prompts." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <Layout>
-        <div className="min-h-screen bg-gradient-to-br from-white via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-blue-900/20">
-          {/* Hero Section */}
-          <HeroSection />
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+          <Toaster position="top-right" />
+          
+          {/* Navigation */}
+          <nav className="border-b border-white/10 bg-black/20 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">DF</span>
+                  </div>
+                  <span className="text-white font-semibold text-xl">DreamForge</span>
+                </div>
+                
+                <div className="flex items-center space-x-6">
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">Home</a>
+                  <a href="/train" className="text-gray-300 hover:text-white transition-colors">Train</a>
+                  <a href="/docs" className="text-gray-300 hover:text-white transition-colors">Docs</a>
+                  <a href="/usage" className="text-gray-300 hover:text-white transition-colors">Analytics</a>
+                  <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all">
+                    GitHub
+                  </button>
+                </div>
+              </div>
+            </div>
+          </nav>
 
           {/* Progress Overlay */}
           {loading && (
@@ -203,31 +237,149 @@ export default function Home() {
             </div>
           )}
 
-          {/* Main Playground Section */}
-          <section id="full-playground" className="px-4 sm:px-6 lg:px-8 py-20 relative">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 mb-6">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm font-medium text-purple-300">AI-Powered Analysis</span>
-                </div>
-                
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                  Full Analysis{' '}
-                  <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                    Playground
-                  </span>
-                </h2>
-                
-                <p className="text-xl text-gray-700 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                  Upload any image and harness advanced AI prompts for comprehensive analysis including 
-                  object detection, point localization, visual Q&A, and intelligent captioning.
+          {/* Hero Section */}
+          <div className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-purple-500/10"></div>
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
+              <div className="text-center">
+                <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+                  Full Analysis <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Playground</span>
+                </h1>
+                <p className="text-xl text-gray-300 mb-8 max-w-3xl mx-auto">
+                  Upload any image and harness advanced AI prompts for comprehensive analysis including object detection, 
+                  point localization, visual Q&A, and intelligent captioning powered by our multi-AI pipeline.
                 </p>
+                
+                {/* AI Pipeline Showcase */}
+                <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 mb-12 border border-white/10">
+                  <h2 className="text-2xl font-bold text-white mb-6">🧠 Advanced AI Pipeline</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-xl p-6 border border-purple-500/30">
+                      <Brain className="w-8 h-8 text-purple-400 mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Anthropic Claude</h3>
+                      <p className="text-gray-300 text-sm">Intelligent prompt routing and result verification for optimal analysis strategy</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-xl p-6 border border-blue-500/30">
+                      <Eye className="w-8 h-8 text-blue-400 mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Moondream Vision</h3>
+                      <p className="text-gray-300 text-sm">State-of-the-art vision processing for detection, captioning, and visual Q&A</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-xl p-6 border border-cyan-500/30">
+                      <Target className="w-8 h-8 text-cyan-400 mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-2">Robustness Layer</h3>
+                      <p className="text-gray-300 text-sm">Multi-stage validation and fine-tuning for production-grade reliability</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+            {/* Feature Highlights */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <Upload className="w-8 h-8 text-purple-400 mb-3" />
+                <h3 className="text-lg font-semibold text-white mb-2">Smart Upload</h3>
+                <p className="text-gray-300 text-sm">Drag & drop images up to 5MB with instant preview</p>
+              </div>
+              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <Eye className="w-8 h-8 text-blue-400 mb-3" />
+                <h3 className="text-lg font-semibold text-white mb-2">Object Detection</h3>
+                <p className="text-gray-300 text-sm">Identify and locate objects with precision bounding boxes</p>
+              </div>
+              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <MessageSquare className="w-8 h-8 text-cyan-400 mb-3" />
+                <h3 className="text-lg font-semibold text-white mb-2">Visual Q&A</h3>
+                <p className="text-gray-300 text-sm">Ask complex questions about image content</p>
+              </div>
+              <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <MapPin className="w-8 h-8 text-green-400 mb-3" />
+                <h3 className="text-lg font-semibold text-white mb-2">Point Location</h3>
+                <p className="text-gray-300 text-sm">Find exact coordinates of specific objects</p>
+              </div>
+            </div>
+
+            {/* Main Analysis Interface */}
+            <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-white mb-2">DreamForge VLM</h2>
+                <p className="text-gray-300">Transform your vision with AI-powered image analysis</p>
               </div>
               
-              <PromptForm onSubmit={handleSubmit} loading={loading} />
+              <PromptForm onSubmit={handleSubmit} loading={loading} ref={setPromptFormRef} />
+              
+              {/* Quick Examples */}
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-4">Quick Examples</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => handleExampleClick("What objects can you detect in this image?")}
+                    className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 text-left p-4 rounded-lg border border-purple-500/30 transition-all"
+                  >
+                    <div className="text-white font-medium">Object Detection</div>
+                    <div className="text-gray-300 text-sm">"What objects can you detect in this image?"</div>
+                  </button>
+                  <button 
+                    onClick={() => handleExampleClick("What color is the car in the background?")}
+                    className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 text-left p-4 rounded-lg border border-blue-500/30 transition-all"
+                  >
+                    <div className="text-white font-medium">Visual Q&A</div>
+                    <div className="text-gray-300 text-sm">"What color is the car in the background?"</div>
+                  </button>
+                  <button 
+                    onClick={() => handleExampleClick("Where is the person standing?")}
+                    className="bg-gradient-to-r from-cyan-500/20 to-green-500/20 hover:from-cyan-500/30 hover:to-green-500/30 text-left p-4 rounded-lg border border-cyan-500/30 transition-all"
+                  >
+                    <div className="text-white font-medium">Point Location</div>
+                    <div className="text-gray-300 text-sm">"Where is the person standing?"</div>
+                  </button>
+                  <button 
+                    onClick={() => handleExampleClick("Describe this image in detail")}
+                    className="bg-gradient-to-r from-green-500/20 to-purple-500/20 hover:from-green-500/30 hover:to-purple-500/30 text-left p-4 rounded-lg border border-green-500/30 transition-all"
+                  >
+                    <div className="text-white font-medium">Smart Caption</div>
+                    <div className="text-gray-300 text-sm">"Describe this image in detail"</div>
+                  </button>
+                </div>
+              </div>
             </div>
-          </section>
+
+            {/* Training CTA */}
+            <div className="mt-12 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-2xl p-8 border border-purple-500/30">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Ready to Train Your Own Models?</h3>
+                  <p className="text-gray-300 mb-4">
+                    Use reinforcement learning to fine-tune vision models for your specific use case. 
+                    Upload datasets, define reward functions, and deploy custom models.
+                  </p>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 text-purple-400">
+                      <Zap className="w-4 h-4" />
+                      <span className="text-sm">Reinforcement Learning</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-blue-400">
+                      <Brain className="w-4 h-4" />
+                      <span className="text-sm">Custom Datasets</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-cyan-400">
+                      <Target className="w-4 h-4" />
+                      <span className="text-sm">Production Deploy</span>
+                    </div>
+                  </div>
+                </div>
+                <a 
+                  href="/train" 
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all flex items-center space-x-2 shadow-lg"
+                >
+                  <span>Train Models</span>
+                  <ArrowRight className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+          </div>
 
           {/* Features Section */}
           <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -333,40 +485,16 @@ export default function Home() {
 
           {/* Result Overlay */}
           {result && (
-            <ResultOverlay 
-              result={result} 
+            <ResultOverlay
+              result={result.result}
+              skill={result.skill}
               image={currentImage}
               onClose={closeResult}
+              metadata={result.metadata}
+              verified={result.verified}
+              feedback={result.feedback}
             />
           )}
-
-          {/* Toast Notifications */}
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: 'rgba(17, 24, 39, 0.95)',
-                color: '#f3f4f6',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '0.75rem',
-                backdropFilter: 'blur(16px)',
-              },
-              success: {
-                iconTheme: {
-                  primary: '#10b981',
-                  secondary: '#fff',
-                },
-              },
-              error: {
-                iconTheme: {
-                  primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
         </div>
       </Layout>
     </>
