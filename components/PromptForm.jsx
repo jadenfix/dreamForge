@@ -26,6 +26,7 @@ const PromptForm = forwardRef(({ onSubmit, loading }, ref) => {
     }
   }));
 
+  // Stable handleSubmit function using useCallback
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     
