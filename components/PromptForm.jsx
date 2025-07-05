@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { Upload, Send, Settings, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -26,6 +26,26 @@ const PromptForm = forwardRef(({ onSubmit, loading }, ref) => {
     }
   }));
 
+  const handleSubmit = useCallback((e) => {
+    e.preventDefault();
+    
+    if (!prompt.trim()) {
+      toast.error('Please enter a prompt');
+      return;
+    }
+    
+    if (!image) {
+      toast.error('Please upload an image');
+      return;
+    }
+
+    onSubmit({
+      prompt: prompt.trim(),
+      image,
+      useAnthropicPlanner
+    });
+  }, [prompt, image, useAnthropicPlanner, onSubmit]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -41,7 +61,7 @@ const PromptForm = forwardRef(({ onSubmit, loading }, ref) => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [prompt, image]);
+  }, [handleSubmit]);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -73,26 +93,6 @@ const PromptForm = forwardRef(({ onSubmit, loading }, ref) => {
     };
     
     reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!prompt.trim()) {
-      toast.error('Please enter a prompt');
-      return;
-    }
-    
-    if (!image) {
-      toast.error('Please upload an image');
-      return;
-    }
-
-    onSubmit({
-      prompt: prompt.trim(),
-      image,
-      useAnthropicPlanner
-    });
   };
 
   const clearImage = () => {
