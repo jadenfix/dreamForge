@@ -53,6 +53,7 @@ describe('/api/dream', () => {
     process.env.MONGODB_URI = 'test-uri';
     process.env.ANTHROPIC_API_KEY = 'test-key';
     process.env.MOONDREAM_KEY = 'test-key';
+    process.env.MOONDREAM_KEY = 'test-key';
     
     // Setup mocks
     const mockConnectToDatabase = require('../../lib/mongodb.js').default;
@@ -250,4 +251,14 @@ describe('/api/dream', () => {
     expect(data.verified).toBeNull();
     expect(data.verificationStatus).toBe('not_requested');
   });
+  it('returns explicit setup status without invoking a missing vision provider', async () => {
+    delete process.env.MOONDREAM_KEY;
+    const { req, res } = createMocks({ method: 'POST', body: { prompt: 'Describe this image', image: 'dGVzdA==' } });
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(503);
+    expect(JSON.parse(res._getData()).message).toContain('MOONDREAM_KEY');
+    const vision = require('../../lib/moondreamClient.js').default;
+    expect(vision.caption).not.toHaveBeenCalled();
+  });
+
 }); 

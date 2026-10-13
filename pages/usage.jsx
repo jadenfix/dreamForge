@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
 import MetricCard from '../components/MetricCard';
 import AnalyticsChart from '../components/AnalyticsChart';
 import ActivityFeed from '../components/ActivityFeed';
@@ -163,7 +162,7 @@ export default function Usage() {
 
   if (loading && !usageData) {
     return (
-      <Layout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
           <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Loading skeleton */}
@@ -181,7 +180,7 @@ export default function Usage() {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     );
   }
 
@@ -234,9 +233,14 @@ export default function Usage() {
   ] : [];
 
   return (
-    <Layout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {usageData?.metadata?.dataSource === 'fallback' && (
+            <p role="status" className="mb-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3 text-amber-100">
+              Demo analytics: sample records are shown because no usage data is available.
+            </p>
+          )}
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
@@ -361,6 +365,6 @@ export default function Usage() {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 } 

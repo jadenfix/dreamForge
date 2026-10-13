@@ -24,6 +24,12 @@ export default async function handler(req, res) {
 
     // Step 1: Validate input
     const { prompt, image } = DreamSchema.parse(req.body);
+    if (!process.env.MOONDREAM_KEY) {
+      return res.status(503).json({
+        error: 'Provider not configured',
+        message: 'Configure MOONDREAM_KEY to run image inference. No model output was generated.',
+      });
+    }
 
     // Step 2: First try Anthropic for intelligent routing
     let skill = 'caption'; // default fallback
