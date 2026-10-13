@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  ComposedChart, 
-  Line, 
-  Bar, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  ComposedChart,
+  Line,
+  Bar,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell 
+  Cell
 } from 'recharts';
 import { BarChart3, TrendingUp, PieChart as PieIcon, Activity } from 'lucide-react';
 
@@ -19,7 +19,7 @@ const CHART_TYPES = [
   { id: 'composed', name: 'Overview', icon: Activity },
   { id: 'trend', name: 'Trends', icon: TrendingUp },
   { id: 'distribution', name: 'Distribution', icon: PieIcon },
-  { id: 'performance', name: 'Performance', icon: BarChart3 },
+  { id: 'performance', name: 'Performance', icon: BarChart3 }
 ];
 
 const PIE_COLORS = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'];
@@ -44,9 +44,9 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export default function AnalyticsChart({ 
-  data = [], 
-  skillDistribution = [], 
+export default function AnalyticsChart({
+  data = [],
+  skillDistribution = [],
   performanceData = [],
   className = '',
   title = 'Analytics Overview'
@@ -66,15 +66,15 @@ export default function AnalyticsChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-              <XAxis 
-                dataKey="name" 
-                stroke="#9CA3AF" 
+              <XAxis
+                dataKey="name"
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
-                stroke="#9CA3AF" 
+              <YAxis
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -87,16 +87,16 @@ export default function AnalyticsChart({
                 stroke="#8B5CF6"
                 strokeWidth={3}
               />
-              <Bar 
-                dataKey="success" 
-                fill="#10B981" 
+              <Bar
+                dataKey="success"
+                fill="#10B981"
                 radius={[4, 4, 0, 0]}
                 opacity={0.8}
               />
-              <Line 
-                type="monotone" 
-                dataKey="responseTime" 
-                stroke="#06B6D4" 
+              <Line
+                type="monotone"
+                dataKey="responseTime"
+                stroke="#06B6D4"
                 strokeWidth={3}
                 dot={{ fill: '#06B6D4', strokeWidth: 2, r: 6 }}
                 activeDot={{ r: 8, stroke: '#06B6D4', strokeWidth: 2 }}
@@ -119,8 +119,8 @@ export default function AnalyticsChart({
                 dataKey="value"
               >
                 {skillDistribution.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={PIE_COLORS[index % PIE_COLORS.length]}
                   />
                 ))}
@@ -141,15 +141,15 @@ export default function AnalyticsChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.2} />
-              <XAxis 
-                dataKey="name" 
-                stroke="#9CA3AF" 
+              <XAxis
+                dataKey="name"
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
-                stroke="#9CA3AF" 
+              <YAxis
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
@@ -171,30 +171,30 @@ export default function AnalyticsChart({
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={performanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
-              <XAxis 
-                dataKey="skill" 
-                stroke="#9CA3AF" 
+              <XAxis
+                dataKey="skill"
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
-              <YAxis 
-                stroke="#9CA3AF" 
+              <YAxis
+                stroke="#9CA3AF"
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="avgResponseTime" 
-                fill="#8B5CF6" 
+              <Bar
+                dataKey="avgResponseTime"
+                fill="#8B5CF6"
                 radius={[4, 4, 0, 0]}
                 opacity={0.8}
               />
-              <Line 
-                type="monotone" 
-                dataKey="successRate" 
-                stroke="#10B981" 
+              <Line
+                type="monotone"
+                dataKey="successRate"
+                stroke="#10B981"
                 strokeWidth={3}
                 dot={{ fill: '#10B981', strokeWidth: 2, r: 6 }}
               />
@@ -211,7 +211,7 @@ export default function AnalyticsChart({
     <div className={`bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.05] backdrop-blur-xl rounded-2xl overflow-hidden ${className}`}>
       {/* Header with Chart Type Selector */}
       <div className="p-6 border-b border-white/[0.05]">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-xl font-semibold text-white">{title}</h3>
           <div className="flex space-x-1 bg-white/[0.03] rounded-xl p-1">
             {CHART_TYPES.map((type) => {
@@ -248,7 +248,7 @@ export default function AnalyticsChart({
           <div className="flex flex-wrap gap-4">
             {skillDistribution.map((entry, index) => (
               <div key={entry.name} className="flex items-center space-x-2">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                 />
@@ -261,4 +261,4 @@ export default function AnalyticsChart({
       )}
     </div>
   );
-} 
+}

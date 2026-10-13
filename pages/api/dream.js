@@ -8,7 +8,7 @@ import { addUsageRecord, getUsageCount, getSuccessfulUsageCount } from '../../li
 // Validation schema
 const DreamSchema = z.object({
   prompt: z.string().min(1).max(2000),
-  image: z.string().min(1), // base64 encoded image
+  image: z.string().min(1) // base64 encoded image
 });
 
 export default async function handler(req, res) {
@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     if (!process.env.MOONDREAM_KEY) {
       return res.status(503).json({
         error: 'Provider not configured',
-        message: 'Configure MOONDREAM_KEY to run image inference. No model output was generated.',
+        message: 'Configure MOONDREAM_KEY to run image inference. No model output was generated.'
       });
     }
 
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
           messages: [{
             role: 'user',
             content: `You are a router for a visual AI system. Given the user request: "${prompt}"
-        
+
 Analyze this request and return ONLY a JSON object with this exact structure:
 {
   "skill": "detect" | "point" | "query" | "caption",
@@ -55,7 +55,7 @@ Analyze this request and return ONLY a JSON object with this exact structure:
 
 Skills:
 - "detect": Find/identify objects in the image
-- "point": Locate specific coordinates/positions  
+- "point": Locate specific coordinates/positions
 - "query": Answer questions about the image
 - "caption": Generate descriptions of the image
 
@@ -99,7 +99,7 @@ Choose the most appropriate skill and include relevant parameters.`
     try {
       const connectToDatabase = (await import('../../lib/mongodb.js')).default;
       const Usage = (await import('../../models/Usage.js')).default;
-      
+
       await connectToDatabase();
       usageRecord = new Usage(usageData);
       logger.info('Using MongoDB for usage tracking');
@@ -107,14 +107,14 @@ Choose the most appropriate skill and include relevant parameters.`
       // Fall back to in-memory storage
       usageRecord = {
         ...usageData,
-        save: async function() {
+        async save() {
           this.responseTime = this.responseTime || 0;
           this.resultSize = this.resultSize || 0;
           this.confidence = this.confidence || null;
           addUsageRecord(this);
           logger.info('Saved usage data to memory store');
         },
-        markError: async function(errorMessage) {
+        async markError(errorMessage) {
           this.success = false;
           this.errorMessage = errorMessage;
           await this.save();
@@ -125,10 +125,10 @@ Choose the most appropriate skill and include relevant parameters.`
 
     // Step 3: Convert base64 to buffer for Moondream
     const imageBuffer = Buffer.from(image, 'base64');
-    
+
     // Step 4: Call Moondream API
     const dreamStartTime = Date.now();
-    
+
     let moondreamResponse;
     switch (skill) {
       case 'detect':
@@ -138,28 +138,28 @@ Choose the most appropriate skill and include relevant parameters.`
           target: params.target
         });
         break;
-      
+
       case 'point':
         moondreamResponse = await moondreamClient.point({
           image: imageBuffer,
           query: params.query || prompt
         });
         break;
-      
+
       case 'query':
         moondreamResponse = await moondreamClient.query({
           image: imageBuffer,
           question: params.question || prompt
         });
         break;
-      
+
       case 'caption':
         moondreamResponse = await moondreamClient.caption({
           image: imageBuffer,
           style: params.style
         });
         break;
-      
+
       default:
         throw new Error(`Unknown skill: ${skill}`);
     }
@@ -253,7 +253,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     usageRecord.responseTime = totalDuration;
     usageRecord.resultSize = JSON.stringify(moondreamResponse).length;
     usageRecord.success = verified === true; // only completed, positive verification counts
-    
+
     // Extract confidence if available
     if (moondreamResponse.confidence) {
       usageRecord.confidence = moondreamResponse.confidence;
@@ -266,7 +266,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     await usageRecord.save();
 
     // Step 6: Get usage summary for response
-    let usageSummary = {
+    const usageSummary = {
       totalCalls: getUsageCount(),
       successRate: Math.round((getSuccessfulUsageCount() / Math.max(getUsageCount(), 1)) * 100),
       skillBreakdown: {},
@@ -289,7 +289,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
         dataStorage: usageRecord.save.toString().includes('inMemoryUsageData') ? 'memory' : 'mongodb'
       },
       usage: usageSummary,
-      analysis: analysis
+      analysis
     };
 
     logger.info('Dream request completed successfully', {
@@ -332,7 +332,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-} 
+      sizeLimit: '10mb'
+    }
+  }
+};

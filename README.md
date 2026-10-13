@@ -35,7 +35,7 @@ A powerful, full-stack Visual Language Model (VLM) platform that combines Moondr
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - MongoDB Atlas account (free M0 tier)
 - Anthropic API key
 - Moondream API key
@@ -102,7 +102,6 @@ npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run test         # Run tests
-npm run type-check   # TypeScript type checking
 ```
 
 ### Project Structure
@@ -294,3 +293,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Built with ❤️ by the DreamForge team (Jaden)**
+### Analytics evidence and validation
+
+The dashboard uses recorded calls for the selected time range. Its UTC activity
+chart includes only the returned recent history (the API defaults to 10 records);
+skill metrics summarize the full range. No period-over-period changes or uptime
+claims are inferred from those records. With no data, sample analytics are
+explicitly labeled. In-memory usage resets when the server process restarts;
+configure MongoDB for persistence. Cost is a $0.002/call estimate, not provider billing.
+
+This JavaScript project is validated with lint, tests and a production build.
+The previous type-check script was an echo placeholder and has been removed.
+Live provider and deployed database behavior still require configured credentials.

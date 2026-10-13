@@ -1,86 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  Zap, 
-  Download, 
-  Share2, 
-  Settings, 
-  HelpCircle, 
-  RefreshCw,
-  TrendingUp,
-  BarChart3,
-  FileText,
-  Camera,
-  Clock,
-  Bookmark,
-  ExternalLink,
-  Copy,
-  Check
-} from 'lucide-react';
+import { Download, Share2, RefreshCw, Camera, ExternalLink, Check } from 'lucide-react';
 
 const QUICK_ACTIONS = [
-  {
-    id: 'new-analysis',
-    name: 'New Analysis',
-    description: 'Start analysis',
-    icon: Camera,
-    gradient: 'from-purple-500 to-pink-500',
-    action: 'navigate',
-    path: '/',
-  },
-  {
-    id: 'export-data',
-    name: 'Export Data',
-    description: 'Download JSON',
-    icon: Download,
-    gradient: 'from-blue-500 to-cyan-500',
-    action: 'export',
-  },
-  {
-    id: 'share-dashboard',
-    name: 'Share',
-    description: 'Copy link',
-    icon: Share2,
-    gradient: 'from-green-500 to-emerald-500',
-    action: 'share',
-  },
-  {
-    id: 'refresh-data',
-    name: 'Refresh',
-    description: 'Update metrics',
-    icon: RefreshCw,
-    gradient: 'from-orange-500 to-red-500',
-    action: 'refresh',
-  },
-  {
-    id: 'api-docs',
-    name: 'API Docs',
-    description: 'Integration',
-    icon: FileText,
-    gradient: 'from-indigo-500 to-purple-500',
-    action: 'external',
-    url: 'https://docs.dreamforge.ai',
-  },
-  {
-    id: 'settings',
-    name: 'Settings',
-    description: 'Configure',
-    icon: Settings,
-    gradient: 'from-gray-500 to-slate-500',
-    action: 'modal',
-    modal: 'settings',
-  },
-];
-
-const RECENT_SHORTCUTS = [
-  { id: 'detect-last', name: 'Re-run last detection', icon: TrendingUp },
-  { id: 'export-week', name: 'Export weekly report', icon: BarChart3 },
-  { id: 'bookmark-query', name: 'Saved query templates', icon: Bookmark },
-  { id: 'recent-images', name: 'Recent uploaded images', icon: Camera },
+  { id: 'new-analysis', name: 'New Analysis', description: 'Start analysis', icon: Camera, gradient: 'from-purple-500 to-pink-500', action: 'navigate', path: '/' },
+  { id: 'export-data', name: 'Export Data', description: 'Download displayed records', icon: Download, gradient: 'from-blue-500 to-cyan-500', action: 'export' },
+  { id: 'share-dashboard', name: 'Share', description: 'Copy dashboard URL', icon: Share2, gradient: 'from-green-500 to-emerald-500', action: 'share' },
+  { id: 'refresh-data', name: 'Refresh', description: 'Update metrics', icon: RefreshCw, gradient: 'from-orange-500 to-red-500', action: 'refresh' }
 ];
 
 function ActionCard({ action, onAction, isLoading = false }) {
   const Icon = action.icon;
-  
+
   return (
     <button
       onClick={() => onAction(action)}
@@ -89,7 +19,7 @@ function ActionCard({ action, onAction, isLoading = false }) {
     >
       {/* Background Gradient */}
       <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity rounded-xl`} />
-      
+
       <div className="relative">
         <div className="flex items-center justify-between mb-2">
           <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.gradient} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0`}>
@@ -101,7 +31,7 @@ function ActionCard({ action, onAction, isLoading = false }) {
           </div>
           <ExternalLink className="w-3 h-3 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-        
+
         <h4 className="font-medium text-white text-sm mb-1 leading-tight">{action.name}</h4>
         <p className="text-xs text-gray-400 leading-tight">{action.description}</p>
       </div>
@@ -109,35 +39,18 @@ function ActionCard({ action, onAction, isLoading = false }) {
   );
 }
 
-function ShortcutItem({ shortcut, onAction }) {
-  const Icon = shortcut.icon;
-  
-  return (
-    <button
-      onClick={() => onAction(shortcut)}
-      className="flex items-center space-x-3 w-full p-2.5 rounded-lg hover:bg-white/[0.05] transition-colors text-left group"
-    >
-      <div className="w-7 h-7 rounded-lg bg-white/[0.05] flex items-center justify-center group-hover:bg-white/[0.1] transition-colors shrink-0">
-        <Icon className="w-3.5 h-3.5 text-gray-400 group-hover:text-white" />
-      </div>
-      <span className="text-xs text-gray-300 group-hover:text-white transition-colors leading-tight">
-        {shortcut.name}
-      </span>
-    </button>
-  );
-}
-
-export default function QuickActions({ 
-  onAction, 
+export default function QuickActions({
+  data,
   onRefresh,
-  className = '',
-  recentShortcuts = RECENT_SHORTCUTS 
+  className = ''
 }) {
   const [loadingActions, setLoadingActions] = useState(new Set());
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState('');
 
   const handleAction = async (action) => {
     if (loadingActions.has(action.id)) return;
+    setError('');
 
     setLoadingActions(prev => new Set([...prev, action.id]));
 
@@ -148,32 +61,22 @@ export default function QuickActions({
             window.location.href = action.path;
           }
           break;
-          
+
         case 'export':
           await handleExport();
           break;
-          
+
         case 'share':
           await handleShare();
           break;
-          
+
         case 'refresh':
           await onRefresh?.();
           break;
-          
-        case 'external':
-          window.open(action.url, '_blank');
-          break;
-          
-        case 'modal':
-          onAction?.(action);
-          break;
-          
-        default:
-          onAction?.(action);
+
       }
     } catch (error) {
-      console.error(`Action ${action.id} failed:`, error);
+      setError(error.message);
     } finally {
       setTimeout(() => {
         setLoadingActions(prev => {
@@ -186,17 +89,10 @@ export default function QuickActions({
   };
 
   const handleExport = async () => {
-    // Simulate export process
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Create and download a sample JSON file
-    const data = {
-      exported_at: new Date().toISOString(),
-      dashboard: 'DreamForge Analytics',
-      note: 'This is a sample export. Real implementation would include actual analytics data.'
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    if (!data) throw new Error('Load usage data before exporting');
+    const exported = { exported_at: new Date().toISOString(), dashboard: 'DreamForge Analytics', ...data };
+
+    const blob = new Blob([JSON.stringify(exported, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -226,18 +122,13 @@ export default function QuickActions({
     }
   };
 
-  const handleShortcutAction = (shortcut) => {
-    console.log('Shortcut action:', shortcut.id);
-    onAction?.(shortcut);
-  };
-
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
-        <RefreshCw 
-          className="w-4 h-4 text-gray-400 hover:text-white cursor-pointer transition-colors" 
+        <RefreshCw
+          className="w-4 h-4 text-gray-400 hover:text-white cursor-pointer transition-colors"
           onClick={() => window.location.reload()}
         />
       </div>
@@ -254,55 +145,10 @@ export default function QuickActions({
         ))}
       </div>
 
-      {/* Recent Shortcuts */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-gray-300">Recent Shortcuts</h4>
-          <button className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
-            View all
-          </button>
-        </div>
-        
-        <div className="space-y-1">
-          {recentShortcuts.slice(0, 4).map((shortcut) => (
-            <ShortcutItem
-              key={shortcut.id}
-              shortcut={shortcut}
-              onAction={handleShortcutAction}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Status Section */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-300">At a Glance</h4>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400">System Status</span>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <span className="text-green-400">Operational</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400">Last Update</span>
-            <span className="text-gray-300">{new Date().toLocaleTimeString().slice(0, 5)}</span>
-          </div>
-          
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400">API Health</span>
-            <span className="text-green-400">99.9% uptime</span>
-          </div>
-          
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-400">Response Time</span>
-            <span className="text-blue-400">~2.4s avg</span>
-          </div>
-        </div>
-      </div>
+      <p className="text-xs text-gray-400">
+        Source: {data?.metadata?.dataSource || 'not loaded'}. Provider uptime is not measured here.
+      </p>
+      {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
 
       {/* Copy Success Feedback */}
       {copied && (
@@ -313,4 +159,4 @@ export default function QuickActions({
       )}
     </div>
   );
-} 
+}

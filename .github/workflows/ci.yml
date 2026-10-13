@@ -9,36 +9,32 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        
+
     - name: Install dependencies
       run: npm ci
-      
+
     - name: Run linter
       run: npm run lint
-      
-    - name: Run type check
-      run: npm run type-check
-      continue-on-error: true
-      
+
     - name: Run tests
       run: npm run test
       env:
         NODE_ENV: test
-        
+
     - name: Build application
       run: npm run build
       env:
@@ -50,11 +46,11 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Deploy to Vercel
       uses: amondnet/vercel-action@v25
       with:
@@ -67,19 +63,19 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Run security audit
       run: npm audit --audit-level high
       continue-on-error: true
-      
+
     - name: Check for vulnerabilities
       run: |
         npm audit --json > audit-results.json
         if [ -s audit-results.json ]; then
           echo "Security vulnerabilities found. Please review."
           cat audit-results.json
-        fi 
+        fi

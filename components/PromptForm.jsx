@@ -29,7 +29,7 @@ const PromptForm = ({ onSubmit, loading }) => {
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    
+
     if (!file) return;
 
     // Validate file type
@@ -45,28 +45,28 @@ const PromptForm = ({ onSubmit, loading }) => {
     }
 
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       const base64 = e.target.result.split(',')[1]; // Remove data URL prefix
       setImage(base64);
       setImagePreview(e.target.result);
     };
-    
+
     reader.onerror = () => {
       toast.error('Failed to read image file');
     };
-    
+
     reader.readAsDataURL(file);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!prompt.trim()) {
       toast.error('Please enter a prompt');
       return;
     }
-    
+
     if (!image) {
       toast.error('Please upload an image');
       return;
@@ -101,7 +101,7 @@ const PromptForm = ({ onSubmit, loading }) => {
           <label className="block text-sm font-semibold text-gray-700">
             Upload Image
           </label>
-          
+
           {!imagePreview ? (
             <div className="border-2 border-dashed border-moondream-purple/60 rounded-xl p-8 text-center hover:border-moondream-purple transition-colors bg-white/5 backdrop-blur">
               <input
@@ -111,8 +111,8 @@ const PromptForm = ({ onSubmit, loading }) => {
                 onChange={handleImageUpload}
                 className="hidden"
               />
-              <label 
-                htmlFor="image-upload" 
+              <label
+                htmlFor="image-upload"
                 className="cursor-pointer flex flex-col items-center space-y-3"
               >
                 <div className="w-16 h-16 bg-moondream-purple/20 rounded-full flex items-center justify-center">
@@ -130,9 +130,9 @@ const PromptForm = ({ onSubmit, loading }) => {
             </div>
           ) : (
             <div className="relative rounded-xl overflow-hidden border border-gray-200">
-              <img 
-                src={imagePreview} 
-                alt="Upload preview" 
+              <img
+                src={imagePreview}
+                alt="Upload preview"
                 className="w-full h-64 object-cover"
               />
               <button
@@ -176,10 +176,10 @@ const PromptForm = ({ onSubmit, loading }) => {
           >
             <Settings className="w-4 h-4" />
             <span>Advanced Settings</span>
-            <svg 
+            <svg
               className={`w-4 h-4 transform transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -240,10 +240,10 @@ const PromptForm = ({ onSubmit, loading }) => {
           <p className="text-sm font-medium text-gray-700 mb-2">Quick Examples:</p>
           <div className="flex flex-wrap gap-2">
             {[
-              "What objects do you see?",
-              "Describe this scene",
-              "Count the people in the image",
-              "Where is the car located?"
+              'What objects do you see?',
+              'Describe this scene',
+              'Count the people in the image',
+              'Where is the car located?'
             ].map((example, index) => (
               <button
                 key={index}
@@ -262,4 +262,4 @@ const PromptForm = ({ onSubmit, loading }) => {
   );
 };
 
-export default PromptForm; 
+export default PromptForm;
