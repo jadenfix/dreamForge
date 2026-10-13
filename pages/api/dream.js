@@ -103,7 +103,7 @@ Choose the most appropriate skill and include relevant parameters.`
       await connectToDatabase();
       usageRecord = new Usage(usageData);
       logger.info('Using MongoDB for usage tracking');
-    } catch (dbError) {
+    } catch {
       // Fall back to in-memory storage
       usageRecord = {
         ...usageData,

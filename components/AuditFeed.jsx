@@ -95,14 +95,14 @@ export default function AuditFeed({ onRerun }) {
               placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gradient-start"
+              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-gradient-start"
             />
           </div>
 
           <select
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-gradient-start"
+            className="px-3 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-gradient-start"
           >
             <option value="all">All Skills</option>
             <option value="detect">Detect</option>

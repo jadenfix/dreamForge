@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [22.x, 24.x]
 
     steps:
     - name: Checkout code
@@ -35,12 +35,33 @@ jobs:
       env:
         NODE_ENV: test
 
+    - name: Toolchain compatibility tests
+      run: npm run test:tooling
+
     - name: Build application
       run: npm run build
       env:
         MONGODB_URI: ${{ secrets.MONGODB_URI }}
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         MOONDREAM_KEY: ${{ secrets.MOONDREAM_KEY }}
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: npm
+    - run: npm ci
+    - run: npm run build
+    - run: npx playwright install --with-deps chromium
+    - run: npm run test:browser
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: desktop-mobile-browser
+        path: artifacts/browser
 
   deploy:
     needs: test
@@ -68,14 +89,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run security audit
-      run: npm audit --audit-level high
-      continue-on-error: true
+    - name: Install the complete dependency tree
+      run: npm ci
 
-    - name: Check for vulnerabilities
-      run: |
-        npm audit --json > audit-results.json
-        if [ -s audit-results.json ]; then
-          echo "Security vulnerabilities found. Please review."
-          cat audit-results.json
-        fi
+    - name: Enforce the complete production and development audit
+      run: npm audit --audit-level=low

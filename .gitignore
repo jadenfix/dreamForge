@@ -132,3 +132,5 @@ secrets.env
 # Backup files
 *.bak
 *.backup 
+# Reproducible browser proof output; CI uploads these artifacts.
+/artifacts/

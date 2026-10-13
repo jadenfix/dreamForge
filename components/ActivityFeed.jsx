@@ -72,7 +72,7 @@ function ActivityItem({ activity, onRerun, onView }) {
 
       <div className="flex space-x-4 p-4 rounded-xl hover:bg-white/[0.02] transition-all duration-200">
         {/* Skill Icon */}
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${skillColors} backdrop-blur-sm flex items-center justify-center relative z-10`}>
+        <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${skillColors} backdrop-blur-[4px] flex items-center justify-center relative z-10`}>
           <SkillIcon className="w-5 h-5 text-white" />
         </div>
 
@@ -214,7 +214,7 @@ export default function ActivityFeed({
             placeholder="Search activities..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
           />
         </div>
 

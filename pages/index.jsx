@@ -176,7 +176,7 @@ export default function Home() {
 
           {/* Progress Overlay */}
           {loading && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60">
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[4px] bg-black/60">
               <div className="relative w-72 h-72 md:w-96 md:h-96">
                 {/* Nebula swirl GIF background */}
                 <img src="/nebula.gif" alt="loading" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-80 animate-spin-slow" />
@@ -307,7 +307,7 @@ export default function Home() {
 
                 <Link
                   href="/usage"
-                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-white/[0.2] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-white/[0.2] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-[4px]"
                 >
                   <BarChart3 className="w-5 h-5" />
                   <span>View Analytics</span>

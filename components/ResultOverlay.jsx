@@ -176,7 +176,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
                 'generating a description or caption'
         }. The AI router analyzed your request and selected the most appropriate analysis method.`);
         setShowExplanation(true);
-      } catch (error) {
+      } catch {
         toast.error('Failed to load explanation');
       } finally {
         setLoading(false);
