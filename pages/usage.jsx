@@ -1,132 +1,60 @@
-import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
+import { buildUsageAnalytics } from '../lib/usageAnalytics';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import MetricCard from '../components/MetricCard';
 import AnalyticsChart from '../components/AnalyticsChart';
 import ActivityFeed from '../components/ActivityFeed';
 import QuickActions from '../components/QuickActions';
-import { 
-  TrendingUp, 
-  Zap, 
-  Clock, 
-  Target, 
+import {
+  TrendingUp,
+  Clock,
+  Target,
   DollarSign,
-  Users,
   Activity,
-  BarChart3,
   AlertCircle,
   CheckCircle,
-  Calendar,
-  Filter,
-  Download,
   RefreshCw
 } from 'lucide-react';
 
 export default function Usage() {
   const [usageData, setUsageData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const latestRequest = useRef(0);
   const [timeRange, setTimeRange] = useState('7d');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Time range options
   const timeRanges = [
-    { id: '1h', name: '1H', label: 'Last Hour' },
-    { id: '24h', name: '24H', label: 'Last 24 Hours' },
-    { id: '7d', name: '7D', label: 'Last 7 Days' },
-    { id: '30d', name: '30D', label: 'Last 30 Days' },
-    { id: '90d', name: '90D', label: 'Last 90 Days' },
+    { days: 1 / 24, id: '1h', name: '1H', label: 'Last Hour' },
+    { days: 1, id: '24h', name: '24H', label: 'Last 24 Hours' },
+    { days: 7, id: '7d', name: '7D', label: 'Last 7 Days' },
+    { days: 30, id: '30d', name: '30D', label: 'Last 30 Days' },
+    { days: 90, id: '90d', name: '90D', label: 'Last 90 Days' }
   ];
 
-  // Fetch usage data
-  const fetchUsageData = async (refresh = false) => {
+  const selectedDays = timeRange === '1h' ? 1 / 24 : timeRange === '24h' ? 1 : Number(timeRange.slice(0, -1));
+  const rangeLabel = timeRanges.find(range => range.id === timeRange).label;
+
+  const fetchUsageData = useCallback(async (refresh = false) => {
+    const requestId = ++latestRequest.current;
     if (!refresh) setLoading(true);
-    
+    setError('');
     try {
-      const response = await fetch('/api/usage');
+      const response = await fetch(`/api/usage?timeRange=${selectedDays}`);
+      if (!response.ok) throw new Error('Usage request failed');
       const data = await response.json();
-      
-      // Generate chart data based on real metrics from API response
-      const generateChartData = (apiData) => {
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        const baseResponseTime = apiData.summary?.avgResponseTime || 2443;
-        const totalCalls = apiData.summary?.totalCalls || 8;
-        const successRate = apiData.summary?.successRate || 88;
-        
-        return days.map((day, index) => {
-          const dailyCalls = Math.max(1, Math.floor(totalCalls * (0.8 + Math.random() * 0.4) / 7));
-          const dailySuccess = Math.floor(dailyCalls * (successRate / 100));
-          const responseVariation = 0.8 + Math.random() * 0.4; // ±20% variation
-          
-          return {
-            name: day,
-            calls: dailyCalls,
-            success: dailySuccess,
-            responseTime: Math.round(baseResponseTime * responseVariation),
-          };
-        });
-      };
-
-      // Generate skill distribution from real skill breakdown
-      const generateSkillDistribution = (apiData) => {
-        if (!apiData?.summary?.skillBreakdown) return [];
-        
-        return Object.entries(apiData.summary.skillBreakdown).map(([skill, stats]) => ({
-          name: skill,
-          value: stats.count || 0
-        }));
-      };
-
-      // Generate performance data from real skill breakdown
-      const generatePerformanceData = (apiData) => {
-        const skillBreakdown = apiData?.summary?.skillBreakdown || {};
-        const skills = Object.keys(skillBreakdown).length > 0 ? Object.keys(skillBreakdown) : ['detect', 'point', 'query', 'caption'];
-        
-        return skills.map(skill => {
-          const skillData = skillBreakdown[skill];
-          return {
-            skill,
-            avgResponseTime: skillData?.avgResponseTime || Math.floor(Math.random() * 1000) + 500,
-            successRate: skillData?.successRate || Math.floor(Math.random() * 20) + 80,
-          };
-        });
-      };
-
-      // Generate alerts
-      const generateAlerts = () => {
-        const alerts = [
-          { type: 'info', message: 'New feature: Enhanced detection accuracy now available' },
-          { type: 'warning', message: 'Response times slightly elevated during peak hours' },
-          { type: 'success', message: 'API uptime: 99.9% this month' },
-        ];
-        return alerts.slice(0, Math.floor(Math.random() * 3) + 1);
-      };
-
-      // Generate mock trend data for sparklines
-      const generateTrendData = () => {
-        return Array.from({ length: 12 }, (_, i) => ({
-          time: i,
-          value: Math.floor(Math.random() * 100) + 20
-        }));
-      };
-      
-      // Enhance data with generated chart data based on real metrics
-      const enhancedData = {
-        ...data,
-        trends: generateTrendData(),
-        chartData: generateChartData(data),
-        skillDistribution: generateSkillDistribution(data),
-        performanceData: generatePerformanceData(data),
-        alerts: generateAlerts(),
-      };
-      
-      setUsageData(enhancedData);
+      if (!data.success) throw new Error('Usage data is unavailable');
+      if (requestId !== latestRequest.current) return;
+      setUsageData(buildUsageAnalytics(data));
       setLastUpdated(new Date());
-    } catch (error) {
-      console.error('Error fetching usage data:', error);
+    } catch (requestError) {
+      if (requestId === latestRequest.current) setError(requestError.message);
     } finally {
-      setLoading(false);
+      if (requestId === latestRequest.current) setLoading(false);
     }
-  };
+  }, [selectedDays]);
 
   // Auto refresh functionality
   useEffect(() => {
@@ -137,33 +65,20 @@ export default function Usage() {
       }, 30000); // Refresh every 30 seconds
     }
     return () => clearInterval(interval);
-  }, [autoRefresh]);
+  }, [autoRefresh, fetchUsageData]);
 
   // Initial load
   useEffect(() => {
     fetchUsageData();
-  }, [timeRange]);
-
-  // Handle actions
-  const handleQuickAction = (action) => {
-    console.log('Quick action:', action);
-  };
+  }, [fetchUsageData]);
 
   const handleRefresh = async () => {
     await fetchUsageData(true);
   };
 
-  const handleActivityRerun = (activity) => {
-    console.log('Rerun activity:', activity);
-  };
-
-  const handleActivityView = (activity) => {
-    console.log('View activity:', activity);
-  };
-
   if (loading && !usageData) {
     return (
-      <Layout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
           <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Loading skeleton */}
@@ -181,7 +96,7 @@ export default function Usage() {
             </div>
           </div>
         </div>
-      </Layout>
+      </>
     );
   }
 
@@ -189,54 +104,55 @@ export default function Usage() {
     {
       title: 'Total Calls',
       value: usageData.summary?.totalCalls?.toLocaleString() || '0',
-      change: '+12%',
       changeType: 'positive',
-      subtitle: 'vs last period',
+      subtitle: rangeLabel,
       icon: TrendingUp,
-      trend: usageData.trends,
+      trend: usageData.trends
     },
     {
       title: 'Success Rate',
       value: `${usageData.summary?.successRate || 0}%`,
-      change: '+2.1%',
       changeType: 'positive',
-      subtitle: 'last 7 days',
+      subtitle: rangeLabel,
       icon: CheckCircle,
-      trend: usageData.trends,
+      trend: usageData.trends
     },
     {
       title: 'Avg Response',
       value: `${usageData.summary?.avgResponseTime || 0}ms`,
-      change: '-15ms',
       changeType: 'positive',
-      subtitle: 'faster',
+      subtitle: rangeLabel,
       icon: Clock,
-      trend: usageData.trends,
+      trend: usageData.trends
     },
     {
       title: 'Top Skill',
-      value: usageData.summary?.topSkill || 'caption',
-      change: `${usageData.summary?.totalCalls || 0}`,
+      value: usageData.summary?.topSkill || '—',
       changeType: 'neutral',
-      subtitle: 'queries',
+      subtitle: rangeLabel,
       icon: Target,
-      trend: usageData.trends,
+      trend: usageData.trends
     },
     {
       title: 'Est. Cost',
       value: `$${usageData.summary?.costUSD?.toFixed(3) || '0.000'}`,
-      change: '+$0.05',
       changeType: 'neutral',
-      subtitle: 'this month',
+      subtitle: '$0.002 per call estimate',
       icon: DollarSign,
-      trend: usageData.trends,
-    },
+      trend: usageData.trends
+    }
   ] : [];
 
   return (
-    <Layout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
         <div className="max-w-7xl mx-auto px-6 py-8">
+          {usageData?.metadata?.dataSource === 'fallback' && (
+            <p role="status" className="mb-4 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3 text-amber-100">
+              Demo analytics: sample records are shown because no usage data is available.
+            </p>
+          )}
+          {error && <p role="alert" className="mb-4 rounded-xl border border-red-400/30 p-3 text-red-200">{error}. Try refreshing.</p>}
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
             <div>
@@ -245,15 +161,15 @@ export default function Usage() {
                 Monitor your DreamForge usage and performance metrics
               </p>
             </div>
-            
-            <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+
+            <div className="flex flex-wrap items-center gap-3 mt-4 lg:mt-0">
               {/* Time Range Selector */}
-              <div className="flex bg-white/[0.05] rounded-xl p-1">
+              <div className="flex shrink-0 bg-white/[0.05] rounded-xl p-1">
                 {timeRanges.map((range) => (
                   <button
                     key={range.id}
                     onClick={() => setTimeRange(range.id)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`whitespace-nowrap px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                       timeRange === range.id
                         ? 'bg-white/[0.1] text-white shadow-lg'
                         : 'text-gray-400 hover:text-white'
@@ -297,8 +213,8 @@ export default function Usage() {
                     alert.type === 'success'
                       ? 'bg-green-500/10 border-green-500/30 text-green-300'
                       : alert.type === 'warning'
-                      ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300'
-                      : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                        ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300'
+                        : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
                   }`}
                 >
                   {alert.type === 'success' && <CheckCircle className="w-5 h-5" />}
@@ -329,14 +245,14 @@ export default function Usage() {
                 data={usageData?.chartData || []}
                 skillDistribution={usageData?.skillDistribution || []}
                 performanceData={usageData?.performanceData || []}
-                title="Usage Analytics"
+                title={`Recent activity (${usageData?.recentHistory?.length || 0} returned records, UTC)`}
               />
             </div>
 
             {/* Quick Actions - Takes up 1/3 of the width */}
             <div className="lg:col-span-1">
               <QuickActions
-                onAction={handleQuickAction}
+                data={usageData}
                 onRefresh={handleRefresh}
               />
             </div>
@@ -346,21 +262,29 @@ export default function Usage() {
           <div className="mb-8">
             <ActivityFeed
               activities={usageData?.recentHistory || []}
-              onRerun={handleActivityRerun}
-              onView={handleActivityView}
+              onView={setSelectedActivity}
             />
           </div>
 
+          {selectedActivity && (
+            <div role="dialog" aria-modal="true" aria-label="Activity details" className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+              <div className="max-w-lg w-full rounded-2xl bg-gray-900 p-6 text-gray-200">
+                <h2 className="text-xl font-semibold mb-4">Activity details</h2>
+                <pre className="overflow-auto max-h-96 whitespace-pre-wrap break-all text-sm">{JSON.stringify(selectedActivity, null, 2)}</pre>
+                <button autoFocus onClick={() => setSelectedActivity(null)} className="mt-4 rounded-lg bg-purple-600 px-4 py-2">Close</button>
+              </div>
+            </div>
+          )}
           {/* Footer Stats */}
           <div className="text-center text-sm text-gray-500">
             <p>
-              Last updated: {lastUpdated.toLocaleTimeString()} • 
-              {autoRefresh ? ' Auto-refreshing every 30s' : ' Manual refresh'} • 
-              Data retention: 90 days
+              Last updated: {lastUpdated.toLocaleTimeString()} •
+              {autoRefresh ? ' Auto-refreshing every 30s' : ' Manual refresh'} •
+              Retention depends on configured storage
             </p>
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
-} 
+}

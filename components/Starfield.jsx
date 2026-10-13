@@ -25,7 +25,7 @@ export default function Starfield() {
         x: Math.random() * width,
         y: Math.random() * height,
         z: Math.random() * width,
-        o: Math.random() * 0.5 + 0.3, // opacity
+        o: Math.random() * 0.5 + 0.3 // opacity
       };
     }
 
@@ -74,4 +74,4 @@ export default function Starfield() {
       className="fixed inset-0 -z-50 pointer-events-none mix-blend-screen"
     />
   );
-} 
+}

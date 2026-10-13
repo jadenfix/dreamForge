@@ -9,20 +9,23 @@ export default async function handler(req, res) {
 
   try {
     // Extract query parameters
-    const { 
-      timeRange = '7', 
+    const {
+      timeRange = '7',
       limit = '10',
-      detailed = 'false' 
+      detailed = 'false'
     } = req.query;
 
-    const timeRangeDays = parseInt(timeRange);
-    const historyLimit = parseInt(limit);
+    const timeRangeDays = Number(timeRange);
+    const historyLimit = Number(limit);
     const includeDetailed = detailed === 'true';
+    if (!Number.isFinite(timeRangeDays) || timeRangeDays <= 0 || timeRangeDays > 365 || !Number.isInteger(historyLimit) || historyLimit < 1 || historyLimit > 100) {
+      return res.status(400).json({ error: 'Invalid timeRange or limit' });
+    }
 
-    logger.info('Fetching usage analytics', { 
-      timeRangeDays, 
-      historyLimit, 
-      includeDetailed 
+    logger.info('Fetching usage analytics', {
+      timeRangeDays,
+      historyLimit,
+      includeDetailed
     });
 
     let summary, recentHistory, dataSource = 'fallback';
@@ -31,12 +34,12 @@ export default async function handler(req, res) {
     try {
       const connectToDatabase = (await import('../../lib/mongodb.js')).default;
       const Usage = (await import('../../models/Usage.js')).default;
-      
+
       await connectToDatabase();
-      
+
       // Get usage summary from MongoDB
       summary = await Usage.getUsageSummary(timeRangeDays);
-      
+
       // Add detailed logging for debugging
       logger.info('Raw MongoDB summary data', {
         totalCalls: summary.totalCalls,
@@ -46,19 +49,19 @@ export default async function handler(req, res) {
       });
 
       // Get recent history
-      recentHistory = await Usage.getRecentHistory(historyLimit);
+      recentHistory = await Usage.getRecentHistory(historyLimit, timeRangeDays);
       dataSource = 'mongodb';
-      
+
     } catch (dbError) {
       logger.warn('MongoDB unavailable, checking in-memory data', dbError.message);
-      
+
       // Try to get in-memory data from the shared storage
       const memoryData = getUsageRecordsInRange(timeRangeDays);
-      
+
       if (memoryData.length > 0) {
         const successfulCalls = memoryData.filter(record => record.success).length;
         const totalCalls = memoryData.length;
-        
+
         // Calculate skill breakdown
         const skillBreakdown = memoryData.reduce((acc, record) => {
           if (!acc[record.skill]) {
@@ -73,7 +76,7 @@ export default async function handler(req, res) {
           const skillRecords = memoryData.filter(r => r.skill === skill);
           const skillSuccesses = skillRecords.filter(r => r.success).length;
           const avgResponseTime = skillRecords.reduce((sum, r) => sum + (r.responseTime || 0), 0) / skillRecords.length;
-          
+
           skillBreakdown[skill].avgResponseTime = Math.round(avgResponseTime);
           skillBreakdown[skill].successRate = Math.round((skillSuccesses / skillRecords.length) * 100);
           skillBreakdown[skill].avgConfidence = Math.round(
@@ -82,20 +85,20 @@ export default async function handler(req, res) {
         });
 
         summary = {
-          totalCalls: totalCalls,
-          successfulCalls: successfulCalls,
+          totalCalls,
+          successfulCalls,
           successRate: totalCalls > 0 ? Math.round((successfulCalls / totalCalls) * 100) : 0,
           avgResponseTime: totalCalls > 0 ? Math.round(
             memoryData.reduce((sum, r) => sum + (r.responseTime || 0), 0) / totalCalls
           ) : 0,
-          skillBreakdown: skillBreakdown,
+          skillBreakdown,
           timeRange: timeRangeDays
         };
 
         recentHistory = memoryData
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
           .slice(0, historyLimit);
-        
+
         dataSource = 'memory';
         logger.info('Using in-memory data', { recordCount: memoryData.length, totalRecords: getUsageRecords().length });
       } else {
@@ -107,15 +110,16 @@ export default async function handler(req, res) {
     // Add cost calculation (e.g., $0.002 per call)
     const COST_PER_CALL = 0.002;
     summary.costUSD = parseFloat((summary.totalCalls * COST_PER_CALL).toFixed(3));
-    
-    // Calculate additional metrics for accurate analytics
-    const totalResponseTime = recentHistory.reduce((sum, record) => sum + (record.responseTime || 0), 0);
-    const avgResponseTime = recentHistory.length > 0 ? Math.round(totalResponseTime / recentHistory.length) : summary.avgResponseTime || 0;
-    
+
+    // Weight skill averages by every call in the selected range, not just the history page.
+    const skillStats = Object.values(summary.skillBreakdown || {});
+    const weightedResponseTime = skillStats.reduce((sum, stats) => sum + (stats.avgResponseTime || 0) * (stats.count || 0), 0);
+    const avgResponseTime = summary.totalCalls > 0 ? Math.round(weightedResponseTime / summary.totalCalls) : 0;
+
     // Find most used skill from real data or calculate from skill breakdown
-    let topSkill = 'caption'; // default
+    let topSkill = null;
     if (summary.skillBreakdown && Object.keys(summary.skillBreakdown).length > 0) {
-      topSkill = Object.entries(summary.skillBreakdown).reduce((a, b) => 
+      topSkill = Object.entries(summary.skillBreakdown).reduce((a, b) =>
         summary.skillBreakdown[a[0]]?.count > summary.skillBreakdown[b[0]]?.count ? a : b
       )[0];
     } else if (recentHistory.length > 0) {
@@ -131,8 +135,8 @@ export default async function handler(req, res) {
       totalCalls: summary.totalCalls || 0,
       successfulCalls: summary.successfulCalls || 0,
       successRate: summary.successRate || 0,
-      avgResponseTime: avgResponseTime,
-      topSkill: topSkill,
+      avgResponseTime,
+      topSkill,
       costUSD: summary.costUSD,
       skillBreakdown: summary.skillBreakdown || {},
       timeRange: summary.timeRange || timeRangeDays
@@ -147,20 +151,20 @@ export default async function handler(req, res) {
       summary: enhancedSummary,
       recentHistory: recentHistory.map(record => ({
         id: record._id || record.id || `mem-${Date.now()}-${Math.random()}`,
-        prompt: record.prompt && record.prompt.length > 100 
-          ? record.prompt.substring(0, 100) + '...' 
+        prompt: record.prompt && record.prompt.length > 100
+          ? record.prompt.substring(0, 100) + '...'
           : record.prompt || 'No prompt',
         skill: record.skill,
         timestamp: record.timestamp,
         responseTime: record.responseTime || 0,
         success: record.success !== undefined ? record.success : true,
-        confidence: record.confidence || null
+        confidence: record.confidence ?? null
       })),
       metadata: {
         timeRange: timeRangeDays,
         historyLimit,
         timestamp: new Date().toISOString(),
-        dataSource: dataSource,
+        dataSource,
         recordCount: recentHistory.length
       }
     };
@@ -171,7 +175,7 @@ export default async function handler(req, res) {
       avgResponseTime: enhancedSummary.avgResponseTime,
       successRate: enhancedSummary.successRate,
       includeDetailed,
-      dataSource: dataSource
+      dataSource
     });
 
     return res.status(200).json(response);
@@ -182,14 +186,14 @@ export default async function handler(req, res) {
     // Return meaningful demo data instead of just error - but clearly mark it as fallback
     const testResponseTimes = [1850, 2150, 2750, 1950, 3200, 2350, 2850];
     const avgResponseTime = Math.round(testResponseTimes.reduce((a, b) => a + b, 0) / testResponseTimes.length);
-    
+
     const fallbackResponse = {
       success: true,
       summary: {
         totalCalls: 8,
         successfulCalls: 7,
         successRate: 88, // 7/8 = 87.5% rounded to 88%
-        avgResponseTime: avgResponseTime, // Real calculated average
+        avgResponseTime, // Real calculated average
         topSkill: 'caption',
         costUSD: 0.016, // 8 * $0.002
         skillBreakdown: {
@@ -198,7 +202,7 @@ export default async function handler(req, res) {
           detect: { count: 2, avgResponseTime: 3650, successRate: 50, avgConfidence: 95 },
           point: { count: 2, avgResponseTime: 2800, successRate: 100, avgConfidence: 90 }
         },
-        timeRange: parseInt(req.query.timeRange || '7')
+        timeRange: Number(req.query.timeRange || '7')
       },
       recentHistory: [
         {
@@ -248,7 +252,7 @@ export default async function handler(req, res) {
         }
       ],
       metadata: {
-        timeRange: parseInt(req.query.timeRange || '7'),
+        timeRange: Number(req.query.timeRange || '7'),
         historyLimit: parseInt(req.query.limit || '10'),
         timestamp: new Date().toISOString(),
         note: 'FALLBACK DATA - MongoDB connection failed',
@@ -259,4 +263,4 @@ export default async function handler(req, res) {
 
     return res.status(200).json(fallbackResponse);
   }
-} 
+}

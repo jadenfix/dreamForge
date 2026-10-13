@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Eye, MapPin, MessageSquare, FileText, Clock, Zap, Copy, Download, HelpCircle } from 'lucide-react';
+import { Eye, MapPin, MessageSquare, FileText, Zap, Copy, Download, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ResultOverlay = ({ result, image, onClose }) => {
@@ -18,13 +18,13 @@ const ResultOverlay = ({ result, image, onClose }) => {
   const drawBoundingBoxes = () => {
     const canvas = canvasRef.current;
     const img = imageRef.current;
-    
+
     if (!canvas || !img) return;
 
     const ctx = canvas.getContext('2d');
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
-    
+
     // Set canvas display size to match image
     const rect = img.getBoundingClientRect();
     canvas.style.width = rect.width + 'px';
@@ -36,51 +36,51 @@ const ResultOverlay = ({ result, image, onClose }) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.strokeWidth = 3;
       ctx.font = '16px Arial';
-      
+
       const progress = Math.min(animationFrame / 30, 1); // 30 frame animation
-      
+
       result.result.objects.forEach((obj, index) => {
         const [x, y, width, height] = obj.bbox;
         const color = getColorForIndex(index);
         const alpha = progress * (0.3 + (index * 0.1)); // Staggered appearance
-        
+
         // Draw bounding box with fade-in
         ctx.strokeStyle = color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
         ctx.lineWidth = 3;
         ctx.strokeRect(x, y, width - x, height - y);
-        
+
         // Draw label background
         const label = `${obj.label} (${Math.round(obj.confidence * 100)}%)`;
         const textMetrics = ctx.measureText(label);
         const labelHeight = 20;
-        
+
         ctx.fillStyle = color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
         ctx.fillRect(x, y - labelHeight, textMetrics.width + 10, labelHeight);
-        
+
         // Draw label text
         ctx.fillStyle = `rgba(255,255,255,${alpha})`;
         ctx.fillText(label, x + 5, y - 5);
       });
-      
+
       if (progress < 1) {
         animationFrame++;
         requestAnimationFrame(animate);
       }
     };
-    
+
     animate();
   };
 
   const drawPoints = () => {
     const canvas = canvasRef.current;
     const img = imageRef.current;
-    
+
     if (!canvas || !img) return;
 
     const ctx = canvas.getContext('2d');
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;
-    
+
     const rect = img.getBoundingClientRect();
     canvas.style.width = rect.width + 'px';
     canvas.style.height = rect.height + 'px';
@@ -89,7 +89,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
 
     result.result.points.forEach((point, index) => {
       const color = getColorForIndex(index);
-      
+
       // Draw point
       ctx.beginPath();
       ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
@@ -98,7 +98,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
       ctx.strokeStyle = 'white';
       ctx.lineWidth = 2;
       ctx.stroke();
-      
+
       // Draw confidence label
       const label = `${Math.round(point.confidence * 100)}%`;
       ctx.fillStyle = color;
@@ -155,28 +155,28 @@ const ResultOverlay = ({ result, image, onClose }) => {
     }
   };
 
-  const WhyButton = ({ skill, params }) => {
+  const WhyButton = ({ skill }) => {
     const [showExplanation, setShowExplanation] = useState(false);
     const [explanation, setExplanation] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
 
     const fetchExplanation = async () => {
       if (explanation) {
         setShowExplanation(!showExplanation);
         return;
       }
-      
+
       setLoading(true);
       try {
         // This would call your "Why?" explanation endpoint
         setExplanation(`I chose "${skill}" because your prompt suggested ${
           skill === 'detect' ? 'finding objects or bounding boxes' :
-          skill === 'point' ? 'locating specific positions or coordinates' :
-          skill === 'query' ? 'answering questions about the image content' :
-          'generating a description or caption'
+            skill === 'point' ? 'locating specific positions or coordinates' :
+              skill === 'query' ? 'answering questions about the image content' :
+                'generating a description or caption'
         }. The AI router analyzed your request and selected the most appropriate analysis method.`);
         setShowExplanation(true);
-      } catch (error) {
+      } catch {
         toast.error('Failed to load explanation');
       } finally {
         setLoading(false);
@@ -192,7 +192,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
         >
           <HelpCircle className="w-4 h-4" />
         </button>
-        
+
         {showExplanation && (
           <div className="absolute top-8 right-0 w-72 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg p-4 z-50 animate-in slide-in-from-top-2">
             <div className="text-sm text-gray-200">
@@ -306,7 +306,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
                     {data.objects.map((obj, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded"
                             style={{ backgroundColor: getColorForIndex(index) }}
                           ></div>
@@ -328,7 +328,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
                     {data.points.map((point, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <div 
+                          <div
                             className="w-4 h-4 rounded-full"
                             style={{ backgroundColor: getColorForIndex(index) }}
                           ></div>
@@ -390,7 +390,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
           {activeTab === 'analytics' && usage && (
             <div className="space-y-6">
               <h4 className="text-lg font-semibold">Usage Analytics</h4>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="text-2xl font-bold text-blue-600">{usage.totalCalls}</div>
@@ -430,7 +430,7 @@ const ResultOverlay = ({ result, image, onClose }) => {
           {activeTab === 'metadata' && (
             <div className="space-y-6">
               <h4 className="text-lg font-semibold">Request Metadata</h4>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -518,4 +518,4 @@ const ResultOverlay = ({ result, image, onClose }) => {
   );
 };
 
-export default ResultOverlay; 
+export default ResultOverlay;

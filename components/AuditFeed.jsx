@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, RotateCcw, Search, Filter } from 'lucide-react';
+import { Clock, RotateCcw, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AuditFeed({ onRerun }) {
@@ -17,7 +17,7 @@ export default function AuditFeed({ onRerun }) {
     try {
       const response = await fetch('/api/usage?limit=20');
       const data = await response.json();
-      
+
       if (data.success) {
         setHistory(data.recentHistory || []);
       }
@@ -42,15 +42,15 @@ export default function AuditFeed({ onRerun }) {
       ctx.font = '14px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('Re-run Demo', canvas.width/2, canvas.height/2);
-      
+
       const imageData = canvas.toDataURL().split(',')[1];
-      
+
       onRerun({
         prompt: record.prompt,
         image: imageData,
         useAnthropicPlanner: true
       });
-      
+
       toast.success('Re-running analysis...');
     }
   };
@@ -58,7 +58,7 @@ export default function AuditFeed({ onRerun }) {
   const getSkillColor = (skill) => {
     const colors = {
       detect: 'bg-blue-500',
-      point: 'bg-green-500', 
+      point: 'bg-green-500',
       query: 'bg-purple-500',
       caption: 'bg-orange-500'
     };
@@ -85,7 +85,7 @@ export default function AuditFeed({ onRerun }) {
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
-        
+
         {/* Search and Filter */}
         <div className="flex gap-4">
           <div className="relative flex-1">
@@ -95,14 +95,14 @@ export default function AuditFeed({ onRerun }) {
               placeholder="Search prompts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gradient-start"
+              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-gradient-start"
             />
           </div>
-          
+
           <select
             value={skillFilter}
             onChange={(e) => setSkillFilter(e.target.value)}
-            className="px-3 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 focus:outline-none focus:ring-2 focus:ring-gradient-start"
+            className="px-3 py-2 bg-white/5 border border-white/10 rounded-md text-gray-200 focus:outline-hidden focus:ring-2 focus:ring-gradient-start"
           >
             <option value="all">All Skills</option>
             <option value="detect">Detect</option>
@@ -144,7 +144,7 @@ export default function AuditFeed({ onRerun }) {
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${getSkillColor(record.skill)}`}>
                       {record.skill}
                     </span>
-                    
+
                     {/* Prompt and Metadata */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-200 truncate">
@@ -166,7 +166,7 @@ export default function AuditFeed({ onRerun }) {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Re-run Button */}
                   <button
                     onClick={() => handleRerun(record)}
@@ -183,4 +183,4 @@ export default function AuditFeed({ onRerun }) {
       </div>
     </div>
   );
-} 
+}

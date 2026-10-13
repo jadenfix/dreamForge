@@ -8,7 +8,7 @@ import { addUsageRecord, getUsageCount, getSuccessfulUsageCount } from '../../li
 // Validation schema
 const DreamSchema = z.object({
   prompt: z.string().min(1).max(2000),
-  image: z.string().min(1), // base64 encoded image
+  image: z.string().min(1) // base64 encoded image
 });
 
 export default async function handler(req, res) {
@@ -24,6 +24,12 @@ export default async function handler(req, res) {
 
     // Step 1: Validate input
     const { prompt, image } = DreamSchema.parse(req.body);
+    if (!process.env.MOONDREAM_KEY) {
+      return res.status(503).json({
+        error: 'Provider not configured',
+        message: 'Configure MOONDREAM_KEY to run image inference. No model output was generated.'
+      });
+    }
 
     // Step 2: First try Anthropic for intelligent routing
     let skill = 'caption'; // default fallback
@@ -40,7 +46,7 @@ export default async function handler(req, res) {
           messages: [{
             role: 'user',
             content: `You are a router for a visual AI system. Given the user request: "${prompt}"
-        
+
 Analyze this request and return ONLY a JSON object with this exact structure:
 {
   "skill": "detect" | "point" | "query" | "caption",
@@ -49,7 +55,7 @@ Analyze this request and return ONLY a JSON object with this exact structure:
 
 Skills:
 - "detect": Find/identify objects in the image
-- "point": Locate specific coordinates/positions  
+- "point": Locate specific coordinates/positions
 - "query": Answer questions about the image
 - "caption": Generate descriptions of the image
 
@@ -93,22 +99,22 @@ Choose the most appropriate skill and include relevant parameters.`
     try {
       const connectToDatabase = (await import('../../lib/mongodb.js')).default;
       const Usage = (await import('../../models/Usage.js')).default;
-      
+
       await connectToDatabase();
       usageRecord = new Usage(usageData);
       logger.info('Using MongoDB for usage tracking');
-    } catch (dbError) {
+    } catch {
       // Fall back to in-memory storage
       usageRecord = {
         ...usageData,
-        save: async function() {
+        async save() {
           this.responseTime = this.responseTime || 0;
           this.resultSize = this.resultSize || 0;
           this.confidence = this.confidence || null;
           addUsageRecord(this);
           logger.info('Saved usage data to memory store');
         },
-        markError: async function(errorMessage) {
+        async markError(errorMessage) {
           this.success = false;
           this.errorMessage = errorMessage;
           await this.save();
@@ -119,10 +125,10 @@ Choose the most appropriate skill and include relevant parameters.`
 
     // Step 3: Convert base64 to buffer for Moondream
     const imageBuffer = Buffer.from(image, 'base64');
-    
+
     // Step 4: Call Moondream API
     const dreamStartTime = Date.now();
-    
+
     let moondreamResponse;
     switch (skill) {
       case 'detect':
@@ -132,28 +138,28 @@ Choose the most appropriate skill and include relevant parameters.`
           target: params.target
         });
         break;
-      
+
       case 'point':
         moondreamResponse = await moondreamClient.point({
           image: imageBuffer,
           query: params.query || prompt
         });
         break;
-      
+
       case 'query':
         moondreamResponse = await moondreamClient.query({
           image: imageBuffer,
           question: params.question || prompt
         });
         break;
-      
+
       case 'caption':
         moondreamResponse = await moondreamClient.caption({
           image: imageBuffer,
           style: params.style
         });
         break;
-      
+
       default:
         throw new Error(`Unknown skill: ${skill}`);
     }
@@ -163,10 +169,13 @@ Choose the most appropriate skill and include relevant parameters.`
     /* -----------------------------------
      *  Second Anthropic "Verifier" step
      * -----------------------------------*/
-    let verified = true;
-    let feedback = '';
+    let verified = null;
+    let verificationStatus = 'not_requested';
+    let feedback = 'Verification was not run: ANTHROPIC_API_KEY is not configured.';
 
     if (process.env.ANTHROPIC_API_KEY) {
+      verificationStatus = 'unavailable';
+      feedback = 'Verification could not be completed.';
       try {
         const anthropicVerifier = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -174,11 +183,8 @@ Choose the most appropriate skill and include relevant parameters.`
           model: 'claude-3-haiku-20240307',
           max_tokens: 128,
           temperature: 0,
+          system: 'You are a strict visual QA verifier.',
           messages: [
-            {
-              role: 'system',
-              content: 'You are a strict visual QA verifier.'
-            },
             {
               role: 'user',
               content: `User prompt: "${prompt}"
@@ -195,10 +201,13 @@ Return JSON: { "verified": true|false, "feedback": "string" }`
 
         if (typeof parsedVerifier.verified === 'boolean') {
           verified = parsedVerifier.verified;
+          verificationStatus = verified ? 'verified' : 'rejected';
           feedback = parsedVerifier.feedback || '';
+        } else {
+          throw new Error('Verifier response must contain a boolean verified field');
         }
       } catch (verErr) {
-        logger.warn('Anthropic verifier failed, defaulting to verified=true', verErr.message);
+        logger.warn('Anthropic verification unavailable', verErr.message);
       }
     }
 
@@ -215,11 +224,8 @@ Return JSON: { "verified": true|false, "feedback": "string" }`
           model: 'claude-3-haiku-20240307',
           max_tokens: 300,
           temperature: 0.5,
+          system: 'You are an expert vision assistant that turns raw computer-vision JSON into rich, user-friendly explanations. Return JSON only.',
           messages: [
-            {
-              role: 'system',
-              content: 'You are an expert vision assistant that turns raw computer-vision JSON into rich, user-friendly explanations. Return JSON only.'
-            },
             {
               role: 'user',
               content: `The user asked: "${prompt}"
@@ -246,8 +252,8 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     // Step 5: Update usage record with results
     usageRecord.responseTime = totalDuration;
     usageRecord.resultSize = JSON.stringify(moondreamResponse).length;
-    usageRecord.success = verified; // mark success according to verification
-    
+    usageRecord.success = verified === true; // only completed, positive verification counts
+
     // Extract confidence if available
     if (moondreamResponse.confidence) {
       usageRecord.confidence = moondreamResponse.confidence;
@@ -260,7 +266,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
     await usageRecord.save();
 
     // Step 6: Get usage summary for response
-    let usageSummary = {
+    const usageSummary = {
       totalCalls: getUsageCount(),
       successRate: Math.round((getSuccessfulUsageCount() / Math.max(getUsageCount(), 1)) * 100),
       skillBreakdown: {},
@@ -274,6 +280,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
       params,
       result: moondreamResponse,
       verified,
+      verificationStatus,
       feedback,
       metadata: {
         totalTime: totalDuration,
@@ -282,7 +289,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
         dataStorage: usageRecord.save.toString().includes('inMemoryUsageData') ? 'memory' : 'mongodb'
       },
       usage: usageSummary,
-      analysis: analysis
+      analysis
     };
 
     logger.info('Dream request completed successfully', {
@@ -325,7 +332,7 @@ Raw VLM JSON:\n${JSON.stringify(moondreamResponse)}\n\nReturn JSON with shape:\n
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-} 
+      sizeLimit: '10mb'
+    }
+  }
+};

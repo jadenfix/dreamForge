@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  Clock, 
-  Eye, 
-  Zap, 
-  Target, 
-  MessageSquare, 
+import {
+  Search,
+  Filter,
+  Clock,
+  Eye,
+  Zap,
+  Target,
+  MessageSquare,
   Image as ImageIcon,
   TrendingUp,
-  MoreHorizontal,
   Play,
   ExternalLink,
   Calendar
@@ -19,14 +18,14 @@ const SKILL_ICONS = {
   'detect': Target,
   'point': Zap,
   'query': MessageSquare,
-  'caption': ImageIcon,
+  'caption': ImageIcon
 };
 
 const SKILL_COLORS = {
   'detect': 'from-orange-500/20 to-red-500/20 border-orange-500/30',
   'point': 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30',
   'query': 'from-blue-500/20 to-purple-500/20 border-blue-500/30',
-  'caption': 'from-green-500/20 to-blue-500/20 border-green-500/30',
+  'caption': 'from-green-500/20 to-blue-500/20 border-green-500/30'
 };
 
 const FILTER_OPTIONS = [
@@ -34,7 +33,7 @@ const FILTER_OPTIONS = [
   { id: 'detect', name: 'Detection', icon: Target },
   { id: 'point', name: 'Pointing', icon: Zap },
   { id: 'query', name: 'Query', icon: MessageSquare },
-  { id: 'caption', name: 'Caption', icon: ImageIcon },
+  { id: 'caption', name: 'Caption', icon: ImageIcon }
 ];
 
 const TIME_FILTERS = [
@@ -42,18 +41,18 @@ const TIME_FILTERS = [
   { id: 'day', name: 'Last 24h' },
   { id: 'week', name: 'Last Week' },
   { id: 'month', name: 'Last Month' },
-  { id: 'all', name: 'All Time' },
+  { id: 'all', name: 'All Time' }
 ];
 
 function ActivityItem({ activity, onRerun, onView }) {
   const SkillIcon = SKILL_ICONS[activity.skill] || MessageSquare;
   const skillColors = SKILL_COLORS[activity.skill] || SKILL_COLORS.query;
-  
+
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    
+
     if (diff < 60000) return 'Just now';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
@@ -70,17 +69,17 @@ function ActivityItem({ activity, onRerun, onView }) {
     <div className="group relative">
       {/* Timeline connector */}
       <div className="absolute left-6 top-12 bottom-0 w-px bg-gradient-to-b from-white/20 to-transparent group-last:hidden" />
-      
+
       <div className="flex space-x-4 p-4 rounded-xl hover:bg-white/[0.02] transition-all duration-200">
         {/* Skill Icon */}
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${skillColors} backdrop-blur-sm flex items-center justify-center relative z-10`}>
+        <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${skillColors} backdrop-blur-[4px] flex items-center justify-center relative z-10`}>
           <SkillIcon className="w-5 h-5 text-white" />
         </div>
-        
+
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
                 <span className="text-sm font-medium text-white capitalize">
                   {activity.skill}
@@ -91,27 +90,27 @@ function ActivityItem({ activity, onRerun, onView }) {
                   {formatTime(activity.timestamp)}
                 </span>
               </div>
-              
+
               <p className="text-gray-300 text-sm mb-2 line-clamp-2">
                 {activity.prompt}
               </p>
-              
+
               <div className="flex items-center space-x-4 text-xs">
                 <span className={`flex items-center ${getStatusColor()}`}>
                   <TrendingUp className="w-3 h-3 mr-1" />
                   {activity.responseTime}ms
                 </span>
-                <span className="text-emerald-400 flex items-center">
-                  ✓ Success
+                <span className={`${activity.success ? 'text-emerald-400' : 'text-red-400'} flex items-center`}>
+                  {activity.success ? '✓ Success' : 'Failed'}
                 </span>
-                {activity.confidence && (
+                {activity.confidence != null && (
                   <span className="text-blue-400 flex items-center">
                     {Math.round(activity.confidence * 100)}% confidence
                   </span>
                 )}
               </div>
             </div>
-            
+
             {/* Actions */}
             <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
@@ -121,16 +120,7 @@ function ActivityItem({ activity, onRerun, onView }) {
               >
                 <Eye className="w-4 h-4 text-gray-400" />
               </button>
-              <button
-                onClick={() => onRerun?.(activity)}
-                className="p-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors"
-                title="Re-run Analysis"
-              >
-                <Play className="w-4 h-4 text-gray-400" />
-              </button>
-              <button className="p-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors">
-                <MoreHorizontal className="w-4 h-4 text-gray-400" />
-              </button>
+              {onRerun && <button onClick={() => onRerun(activity)} className="p-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1]" title="Re-run Analysis"><Play className="w-4 h-4 text-gray-400" /></button>}
             </div>
           </div>
         </div>
@@ -139,11 +129,11 @@ function ActivityItem({ activity, onRerun, onView }) {
   );
 }
 
-export default function ActivityFeed({ 
-  activities = [], 
-  onRerun, 
+export default function ActivityFeed({
+  activities = [],
+  onRerun,
   onView,
-  className = '' 
+  className = ''
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [skillFilter, setSkillFilter] = useState('all');
@@ -173,11 +163,11 @@ export default function ActivityFeed({
         hour: 60 * 60 * 1000,
         day: 24 * 60 * 60 * 1000,
         week: 7 * 24 * 60 * 60 * 1000,
-        month: 30 * 24 * 60 * 60 * 1000,
+        month: 30 * 24 * 60 * 60 * 1000
       };
-      
+
       const cutoff = new Date(now - timeMap[timeFilter]);
-      filtered = filtered.filter(activity => 
+      filtered = filtered.filter(activity =>
         new Date(activity.timestamp) > cutoff
       );
     }
@@ -198,13 +188,13 @@ export default function ActivityFeed({
               </span>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`p-2 rounded-lg transition-colors ${
-                showFilters 
-                  ? 'bg-white/[0.1] text-white' 
+                showFilters
+                  ? 'bg-white/[0.1] text-white'
                   : 'bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1]'
               }`}
             >
@@ -224,7 +214,7 @@ export default function ActivityFeed({
             placeholder="Search activities..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
           />
         </div>
 
@@ -306,4 +296,4 @@ export default function ActivityFeed({
       </div>
     </div>
   );
-} 
+}

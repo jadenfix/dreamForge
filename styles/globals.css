@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@custom-variant dark (&:where(.dark, .dark *));
+/* Keep the previous Tailwind3 border default. */
+@layer base { *, ::before, ::after { border-color: var(--color-gray-200, currentColor); } }
 
 @layer base {
   html {
@@ -22,7 +24,7 @@
   }
   
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-xs border border-gray-200 dark:border-gray-700 p-6;
   }
   
   .input-field {
@@ -211,3 +213,7 @@
 header a {
   @apply text-gray-300 hover:text-white;
 } 
+/* Constrain dashboard columns and long technical labels on narrow screens. */
+.grid > *, .flex-1 { min-width: 0; }
+main { overflow-wrap: anywhere; }
+pre { max-width: 100%; overflow-x: auto; }

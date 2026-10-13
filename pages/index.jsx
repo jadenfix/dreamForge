@@ -1,13 +1,14 @@
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { Toaster } from 'react-hot-toast';
 import toast from 'react-hot-toast';
-import { 
-  Brain, 
-  Zap, 
-  BarChart3, 
-  Target, 
-  Shield, 
+import {
+  Brain,
+  Zap,
+  BarChart3,
+  Target,
+  Shield,
   Download,
   ArrowRight,
   Sparkles,
@@ -15,7 +16,6 @@ import {
   Globe
 } from 'lucide-react';
 
-import Layout from '../components/Layout';
 import PromptForm from '../components/PromptForm';
 import ResultOverlay from '../components/ResultOverlay';
 import HeroSection from '../components/HeroSection.jsx';
@@ -53,14 +53,14 @@ export default function Home() {
   const handleSubmit = async (formData) => {
     setLoading(true);
     setCurrentImage(formData.image);
-    
+
     try {
       const response = await fetch('/api/dream', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(formData)
       });
 
       const data = await response.json();
@@ -71,7 +71,7 @@ export default function Home() {
 
       setResult(data);
       toast.success('Analysis completed successfully!');
-      
+
     } catch (error) {
       console.error('Dream request failed:', error);
       toast.error(error.message || 'Failed to analyze image');
@@ -169,14 +169,14 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Layout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
           {/* Hero Section */}
           <HeroSection />
 
           {/* Progress Overlay */}
           {loading && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60">
+            <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[4px] bg-black/60">
               <div className="relative w-72 h-72 md:w-96 md:h-96">
                 {/* Nebula swirl GIF background */}
                 <img src="/nebula.gif" alt="loading" className="absolute inset-0 w-full h-full object-cover rounded-full opacity-80 animate-spin-slow" />
@@ -211,20 +211,20 @@ export default function Home() {
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   <span className="text-sm font-medium text-purple-300">AI-Powered Analysis</span>
                 </div>
-                
+
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   Full Analysis{' '}
                   <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
                     Playground
                   </span>
                 </h2>
-                
+
                 <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                  Upload any image and harness advanced AI prompts for comprehensive analysis including 
+                  Upload any image and harness advanced AI prompts for comprehensive analysis including
                   object detection, point localization, visual Q&A, and intelligent captioning.
                 </p>
               </div>
-              
+
               <PromptForm onSubmit={handleSubmit} loading={loading} />
             </div>
           </section>
@@ -232,27 +232,27 @@ export default function Home() {
           {/* Features Section */}
           <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/50 to-transparent" />
-            
+
             <div className="max-w-6xl mx-auto relative">
               <div className="text-center mb-16">
                 <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 mb-6">
                   <Code className="w-4 h-4 text-green-400" />
                   <span className="text-sm font-medium text-green-300">Enterprise Features</span>
                 </div>
-                
+
                 <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                   Production-Ready{' '}
                   <span className="bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                     Vision AI
                   </span>
                 </h2>
-                
+
                 <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-                  Built with enterprise-grade architecture, advanced AI orchestration, and 
+                  Built with enterprise-grade architecture, advanced AI orchestration, and
                   best-in-class developer experience for mission-critical applications.
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {features.map((feature, index) => (
                   <FeatureCard
@@ -277,43 +277,43 @@ export default function Home() {
           {/* CTA Section */}
           <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-blue-900/20" />
-            
+
             <div className="max-w-4xl mx-auto text-center relative">
               <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/20 mb-6">
                 <Globe className="w-4 h-4 text-purple-400" />
                 <span className="text-sm font-medium text-purple-300">Get Started Today</span>
               </div>
-              
+
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 Ready to Transform{' '}
                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
                   Your Vision?
                 </span>
               </h2>
-              
+
               <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-                Join thousands of developers and enterprises building the future with DreamForge's 
+                Join thousands of developers and enterprises building the future with DreamForge&apos;s
                 advanced vision AI platform. Start analyzing images in seconds.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <a 
+                <a
                   href="#full-playground"
                   className="group inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-cyan-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/25"
                 >
                   <span>Try Free Demo</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
-                
-                <a 
+
+                <Link
                   href="/usage"
-                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-white/[0.2] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                  className="group inline-flex items-center space-x-2 px-8 py-4 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] hover:border-white/[0.2] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 backdrop-blur-[4px]"
                 >
                   <BarChart3 className="w-5 h-5" />
                   <span>View Analytics</span>
-                </a>
+                </Link>
               </div>
-              
+
               <div className="mt-12 flex items-center justify-center space-x-8 text-sm text-gray-400">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
@@ -333,15 +333,15 @@ export default function Home() {
 
           {/* Result Overlay */}
           {result && (
-            <ResultOverlay 
-              result={result} 
+            <ResultOverlay
+              result={result}
               image={currentImage}
               onClose={closeResult}
             />
           )}
 
           {/* Toast Notifications */}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
@@ -351,24 +351,24 @@ export default function Home() {
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '0.75rem',
-                backdropFilter: 'blur(16px)',
+                backdropFilter: 'blur(16px)'
               },
               success: {
                 iconTheme: {
                   primary: '#10b981',
-                  secondary: '#fff',
-                },
+                  secondary: '#fff'
+                }
               },
               error: {
                 iconTheme: {
                   primary: '#ef4444',
-                  secondary: '#fff',
-                },
-              },
+                  secondary: '#fff'
+                }
+              }
             }}
           />
         </div>
-      </Layout>
+      </>
     </>
   );
-} 
+}

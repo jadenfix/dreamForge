@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 import MiniPlayground from './MiniPlayground.jsx';
 
@@ -18,10 +19,10 @@ export default function HeroSection() {
               Forge your own dreams with AI vision
             </h2>
             <p className="text-lg text-gray-400 mb-8 max-w-xl">
-              Production-grade Visual Language Model platform powered by Moondream and Anthropic AI. 
+              Production-grade Visual Language Model platform powered by Moondream and Anthropic AI.
               Analyze images with natural language prompts in real-time.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <a
                 href="#full-playground"
@@ -29,14 +30,14 @@ export default function HeroSection() {
               >
                 Get Started
               </a>
-              <a
+              <Link
                 href="/usage"
                 className="btn-secondary"
               >
                 View Analytics
-              </a>
+              </Link>
             </div>
-            
+
             {/* Feature Pills */}
             <div className="mt-8 flex flex-wrap gap-2 justify-center lg:justify-start">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
@@ -53,7 +54,7 @@ export default function HeroSection() {
               </span>
             </div>
           </div>
-          
+
           {/* Right Column - Interactive Demo */}
           <div className="flex justify-center lg:justify-end">
             <MiniPlayground />
@@ -62,4 +63,4 @@ export default function HeroSection() {
       </div>
     </section>
   );
-} 
+}
