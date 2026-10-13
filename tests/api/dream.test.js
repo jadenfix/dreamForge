@@ -1,4 +1,3 @@
-import '@anthropic-ai/sdk/shims/node';
 import { createMocks } from 'node-mocks-http';
 
 // Mock all external dependencies before importing the handler
@@ -212,5 +211,43 @@ describe('/api/dream', () => {
     const responseData = JSON.parse(res._getData());
     expect(responseData.analysis).toBeDefined();
     expect(responseData.analysis.explanation).toBe('Image shows a scene');
+    expect(responseData.verified).toBe(true);
+    expect(responseData.verificationStatus).toBe('verified');
+    for (const [request] of mockCreate.mock.calls.slice(1)) {
+      expect(request.system).toEqual(expect.any(String));
+      expect(request.messages.every(message => message.role === 'user' || message.role === 'assistant')).toBe(true);
+    }
+  });
+
+  it.each([
+    ['provider failure', new Error('Verifier unavailable')],
+    ['malformed JSON', { content: [{ text: 'not JSON' }] }],
+    ['missing verdict', { content: [{ text: '{}' }] }],
+  ])('does not verify an image after %s', async (_label, verdict) => {
+    const { Anthropic } = require('@anthropic-ai/sdk');
+    const mockCreate = jest.fn()
+      .mockResolvedValueOnce({ content: [{ text: '{"skill":"caption","params":{}}' }] });
+    if (verdict instanceof Error) mockCreate.mockRejectedValueOnce(verdict);
+    else mockCreate.mockResolvedValueOnce(verdict);
+    mockCreate.mockResolvedValueOnce({ content: [{ text: '{"explanation":"A scene"}' }] });
+    Anthropic.mockImplementation(() => ({ messages: { create: mockCreate } }));
+    const { req, res } = createMocks({ method: 'POST', body: { prompt: 'Describe this image', image: 'dGVzdA==' } });
+    await handler(req, res);
+    const data = JSON.parse(res._getData());
+    expect(res._getStatusCode()).toBe(200);
+    expect(data.verified).toBeNull();
+    expect(data.verificationStatus).toBe('unavailable');
+    expect(data.feedback).toContain('could not be completed');
+    const Usage = require('../../models/Usage.js').default;
+    expect(Usage.mock.results.at(-1).value.success).toBe(false);
+  });
+
+  it('reports verification not requested when no provider key is configured', async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const { req, res } = createMocks({ method: 'POST', body: { prompt: 'Describe this image', image: 'dGVzdA==' } });
+    await handler(req, res);
+    const data = JSON.parse(res._getData());
+    expect(data.verified).toBeNull();
+    expect(data.verificationStatus).toBe('not_requested');
   });
 }); 
