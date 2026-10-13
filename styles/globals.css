@@ -211,3 +211,7 @@
 header a {
   @apply text-gray-300 hover:text-white;
 } 
+/* Constrain dashboard columns and long technical labels on narrow screens. */
+.grid > *, .flex-1 { min-width: 0; }
+main { overflow-wrap: anywhere; }
+pre { max-width: 100%; overflow-x: auto; }

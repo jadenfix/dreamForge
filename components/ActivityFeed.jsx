@@ -79,8 +79,8 @@ function ActivityItem({ activity, onRerun, onView }) {
         
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-1">
                 <span className="text-sm font-medium text-white capitalize">
                   {activity.skill}

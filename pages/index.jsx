@@ -15,7 +15,6 @@ import {
   Globe
 } from 'lucide-react';
 
-import Layout from '../components/Layout';
 import PromptForm from '../components/PromptForm';
 import ResultOverlay from '../components/ResultOverlay';
 import HeroSection from '../components/HeroSection.jsx';
@@ -169,7 +168,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Layout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-blue-900/20">
           {/* Hero Section */}
           <HeroSection />
@@ -368,7 +367,7 @@ export default function Home() {
             }}
           />
         </div>
-      </Layout>
+      </>
     </>
   );
 } 
